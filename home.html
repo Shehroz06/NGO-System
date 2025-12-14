@@ -1,0 +1,221 @@
+<style>
+    /* General Resets and Typography */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+/* Header Styling */
+header {
+    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover, nav a.active {
+    background-color: #2b7049;
+}
+
+/* Main Content Container */
+.container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+h1 {
+    color: #1a5632;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+/* Cause Card Styling (The core component) */
+.cause-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cause-title {
+    color: #0d361c;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.ngo-name {
+    font-size: 0.9em;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.description {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Progress Bar Styling */
+.progress-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    height: 15px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #4CAF50; /* A bright, encouraging green */
+    border-radius: 5px;
+    transition: width 0.5s ease;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.stats p {
+    margin: 0;
+}
+
+/* Donate Button Styling */
+.donate-btn {
+    display: inline-block;
+    background-color: #ff9800; /* Bright orange for call-to-action */
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.donate-btn:hover {
+    background-color: #e68a00;
+}
+
+/* Footer Styling */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #333;
+    color: #fff;
+    margin-top: 40px;
+    font-size: 0.8em;
+}
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alkhidmat: Donate to Causes</title>
+
+    <!-- ✅ CHANGED: Added JS file to integrate with Node.js backend -->
+    <script defer src="home.js"></script>
+</head>
+<body>
+
+<header>
+    <div class="logo">Alkhidmat NGO Management</div>
+    <nav>
+        <a href="index.html" class="active">Causes</a>
+        <a href="login.html">Login / Signup</a>
+    </nav>
+</header>
+
+<main class="container">
+    <h1>Active Charitable Causes</h1>
+    <p>Your contribution directly supports our verified programs.</p>
+
+    <!-- ✅ CHANGED: Static cause cards REMOVED -->
+    <!-- ✅ CHANGED: Dynamic container added for Node.js data -->
+    <div id="cause-container"></div>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 Smart Donation & NGO Management System</p>
+</footer>
+<script>
+    // ✅ Node.js API integration
+
+fetch("http://localhost:3000/api/causes")
+  .then(res => res.json())
+  .then(causes => {
+
+    const container = document.getElementById("cause-container");
+
+    causes.forEach(cause => {
+
+        const progress = Math.round(
+          (cause.collected / cause.goal) * 100
+        );
+
+        container.innerHTML += `
+          <div class="cause-card">
+              <h2 class="cause-title">${cause.title}</h2>
+              <p class="ngo-name">Managed by:
+                <b>${cause.ngo}</b>
+              </p>
+              <p class="description">${cause.description}</p>
+
+              <div class="progress-bar-container">
+                  <div class="progress-bar"
+                       style="width: ${progress}%">
+                  </div>
+              </div>
+
+              <div class="stats">
+                  <p>Goal: <b>PKR ${cause.goal.toLocaleString()}</b></p>
+                  <p>Collected:
+                    <b>PKR ${cause.collected.toLocaleString()}
+                    (${progress}%)</b>
+                  </p>
+              </div>
+
+              <a href="donate.html?cause_id=${cause.id}"
+                 class="donate-btn">
+                 Donate Now
+              </a>
+          </div>
+        `;
+    });
+
+  })
+  .catch(err => {
+      console.error("Error fetching causes:", err);
+  });
+
+</script>
+</body>
+</html>

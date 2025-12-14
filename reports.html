@@ -1,0 +1,386 @@
+<style>
+    /* General Resets and Typography */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+/* Header Styling */
+header {
+    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover, nav a.active {
+    background-color: #2b7049;
+}
+
+
+/* --- Styles Specific to Reports Page (Page 4) --- */
+
+/* Dashboard Grid for Aggregate Cards */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-left: 5px solid #ccc; /* Default border color */
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.stat-desc {
+    font-size: 0.8em;
+    background-color: #f0f0f0;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #555;
+}
+
+/* Card Color Variants */
+.stat-card.blue { border-left-color: #2196F3; }
+.stat-card.blue .stat-number { color: #2196F3; }
+
+.stat-card.green { border-left-color: #4CAF50; }
+.stat-card.green .stat-number { color: #4CAF50; }
+
+.stat-card.orange { border-left-color: #ff9800; }
+.stat-card.orange .stat-number { color: #ff9800; }
+
+
+/* Report Panel Styling */
+.report-panel {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.report-header h2 {
+    margin: 0;
+    font-size: 1.4em;
+    color: #333;
+}
+
+.report-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.report-controls select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.report-btn {
+    background-color: #607d8b; /* Blue-grey for "tools" */
+    color: white;
+}
+
+/* Table overrides for Reports (Dense view) */
+.report-table th {
+    background-color: #eceff1;
+    color: #455a64;
+    text-transform: uppercase;
+    font-size: 0.85em;
+}
+
+.report-table td {
+    font-size: 0.95em;
+}
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics & Reports</title>
+
+    <script defer src="reports.js"></script>
+</head>
+<body>
+
+    <header class="admin-header">
+        <div class="logo">SDNMS Analytics</div>
+        <nav>
+            <a href="admin.html">Manage Causes</a>
+            <a href="reports.html" class="active">Reports</a>
+            <a href="index.html" class="logout-link">Logout</a>
+        </nav>
+    </header>
+
+    <main class="container admin-container">
+
+        <h1>Organization Impact Dashboard</h1>
+
+        <section class="dashboard-grid">
+            
+            <div class="stat-card blue">
+                <h3>Total Funds Raised</h3>
+                <p class="stat-number" id="total-funds-stat">PKR 45.2M</p>
+                <span class="stat-desc">SQL: <code>SUM(amount) FROM Donation</code></span>
+            </div>
+
+            <div class="stat-card green">
+                <h3>Active Volunteers</h3>
+                <p class="stat-number" id="active-volunteers-stat">1,240</p>
+                <span class="stat-desc">SQL: <code>COUNT(*) FROM Volunteer</code></span>
+            </div>
+
+            <div class="stat-card orange">
+                <h3>Highest Donation</h3>
+                <p class="stat-number" id="highest-donation-stat">PKR 500,000</p>
+                <span class="stat-desc">SQL: <code>MAX(amount) FROM Donation</code></span>
+            </div>
+
+        </section>
+
+        <section class="report-panel">
+            <h2>📜 System Audit Trail (AdminLogs)</h2>
+            <p>Records of critical administrative actions (e.g., Cause creation, user updates).</p>
+            
+            <div class="table-responsive">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Timestamp</th>
+                            <th>Actor ID</th>
+                            <th>Action Performed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-log-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section class="report-panel">
+            <h2>💰 Donation Breakdown by Category</h2>
+            <p>Analysis of funds collected across different cause categories.</p>
+            <div class="table-responsive">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Cause Category</th>
+                            <th>Transaction Count</th>
+                            <th>Total Amount</th>
+                            <th>Avg. Donation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-breakdown-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="report-panel">
+            <h2>🤝 Volunteer Assignments (Complex Join)</h2>
+            <p>Lists volunteers and the specific events they are assigned to.</p>
+            
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Volunteer Name</th>
+                        <th>Skill Set</th>
+                        <th>Assigned Event</th>
+                        <th>Event Date</th>
+                    </tr>
+                </thead>
+                <tbody id="volunteer-assignments-body">
+                    </tbody>
+            </table>
+        </section>
+
+    </main>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    alert("Please login as admin first.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const authHeaders = { Authorization: `Bearer ${token}` };
+  const formatPKR = (amount) => `PKR ${Number(amount || 0).toLocaleString()}`;
+
+  // --- 1. Fetch Dashboard Statistics ---
+  function fetchDashboardStats() {
+    fetch("http://localhost:3000/api/stats", { headers: authHeaders })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      })
+      .then((stats) => {
+        document.getElementById("total-funds-stat").textContent = formatPKR(stats.totalFundsRaised);
+        document.getElementById("active-volunteers-stat").textContent = Number(stats.activeVolunteers || 0).toLocaleString();
+        document.getElementById("highest-donation-stat").textContent = formatPKR(stats.highestDonation);
+      })
+      .catch((err) => {
+        console.error("Error fetching dashboard stats:", err);
+        alert("Cannot load reports. Make sure you are logged in as ADMIN.");
+      });
+  }
+
+  // --- 2. Fetch System Audit Log ---
+  function fetchAuditLog() {
+    fetch("http://localhost:3000/api/audit", { headers: authHeaders })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      })
+      .then((logs) => {
+        const tableBody = document.getElementById("audit-log-body");
+        tableBody.innerHTML = "";
+
+        if (!logs || logs.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="4">No audit logs found.</td></tr>`;
+          return;
+        }
+
+        logs.forEach((log) => {
+          const row = `
+            <tr>
+              <td>${log.id}</td>
+              <td>${new Date(log.timestamp).toLocaleString()}</td>
+              <td>${log.actorId} (${log.actorName || "Unknown"})</td>
+              <td><strong>${log.actionType}</strong>: ${log.actionDetails}</td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
+      })
+      .catch((err) => console.error("Error fetching audit logs:", err));
+  }
+
+  // --- 3. Fetch Donation Category Breakdown ---
+  function fetchCategoryBreakdown() {
+    fetch("http://localhost:3000/api/category_breakdown", { headers: authHeaders })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      })
+      .then((categories) => {
+        const tableBody = document.getElementById("category-breakdown-body");
+        tableBody.innerHTML = "";
+
+        if (!categories || categories.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="4">No category breakdown data.</td></tr>`;
+          return;
+        }
+
+        categories.forEach((cat) => {
+          const row = `
+            <tr>
+              <td>${cat.categoryName}</td>
+              <td>${Number(cat.transactionCount || 0).toLocaleString()}</td>
+              <td>${formatPKR(cat.totalAmount)}</td>
+              <td>${formatPKR(cat.avgDonation)}</td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
+      })
+      .catch((err) => console.error("Error fetching category breakdown:", err));
+  }
+
+  // --- 4. Fetch Volunteer Assignments ---
+  function fetchVolunteerAssignments() {
+    fetch("http://localhost:3000/api/volunteer_assignments", { headers: authHeaders })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      })
+      .then((assignments) => {
+        const tableBody = document.getElementById("volunteer-assignments-body");
+        tableBody.innerHTML = "";
+
+        if (!assignments || assignments.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="4">No volunteer assignments found.</td></tr>`;
+          return;
+        }
+
+        assignments.forEach((assignment) => {
+          const row = `
+            <tr>
+              <td>${assignment.volunteerName}</td>
+              <td>${assignment.skillSet || ""}</td>
+              <td>${assignment.assignedEvent || ""}</td>
+              <td>${assignment.eventDate ? new Date(assignment.eventDate).toLocaleDateString() : ""}</td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
+      })
+      .catch((err) => console.error("Error fetching volunteer assignments:", err));
+  }
+
+  fetchDashboardStats();
+  fetchAuditLog();
+  fetchCategoryBreakdown();
+  fetchVolunteerAssignments();
+});
+</script>
+
+</body>
+</html>

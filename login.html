@@ -1,0 +1,345 @@
+
+<style>
+    
+/* General Resets and Typography */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+/* Header Styling */
+header {
+    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover, nav a.active {
+    background-color: #2b7049;
+}
+
+
+/* --- Styles Specific to the Authentication Page (Page 2) --- */
+
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Aligning to the top for better viewing */
+    min-height: calc(100vh - 120px); /* Pushes footer down */
+}
+
+.auth-card {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+}
+
+/* Toggle Tabs for Login/Signup */
+.auth-toggle {
+    display: flex;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #ddd;
+}
+
+.auth-toggle button {
+    flex-grow: 1;
+    padding: 15px 10px;
+    border: none;
+    background: none;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.auth-toggle button:hover {
+    color: #1a5632;
+}
+
+.auth-toggle .active-tab {
+    color: #1a5632;
+    border-bottom-color: #1a5632;
+}
+
+/* Form Styling */
+.auth-form h2 {
+    text-align: center;
+    color: #1a5632;
+    margin-top: 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="text"],
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Important for padding/width */
+    font-size: 1em;
+}
+
+.submit-btn {
+    width: 100%;
+    background-color: #ff9800; /* Orange CTA color */
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #e68a00;
+}
+
+.hidden {
+    display: none;
+}
+</style><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up</title>
+    
+    <script defer src="auth.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Alkhidmat NGO Management</div>
+        <nav>
+            <a href="index.html">Causes</a>
+            <a href="login.html" class="active">Login / Signup</a>
+        </nav>
+    </header>
+
+    <main class="container form-container">
+        
+        <div class="auth-card">
+            
+            <div class="auth-toggle">
+                <button id="login-tab" class="active-tab">Login</button>
+                <button id="signup-tab">Sign Up</button>
+            </div>
+            
+            <form id="login-form" class="auth-form"> 
+                <h2>Account Login</h2>
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <p id="login-status" class="status-message"></p> 
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+
+            <form id="signup-form" class="auth-form hidden">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-role">I am registering as a...</label>
+                    <select id="signup-role" name="role" required>
+                        <option value="donor">Donor</option>
+                        <option value="ngo">NGO Manager</option>
+                        <option value="admin">System Admin</option>
+                    </select>
+                </div>
+                 <p id="signup-status" class="status-message"></p>
+                <button type="submit" class="submit-btn">Sign Up</button>
+            </form>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Smart Donation & NGO Management System</p>
+    </footer>
+<script>
+    // auth.js
+
+document.addEventListener('DOMContentLoaded', () => {
+    const loginTab = document.getElementById('login-tab');
+    const signupTab = document.getElementById('signup-tab');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    
+    // Status message elements
+    const loginStatus = document.getElementById('login-status');
+    const signupStatus = document.getElementById('signup-status');
+
+    // --- Tab Toggling Logic (Moved from HTML) ---
+    const showLoginForm = () => {
+        loginTab.classList.add('active-tab');
+        signupTab.classList.remove('active-tab');
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        loginStatus.textContent = ''; // Clear previous messages
+    };
+
+    const showSignupForm = () => {
+        signupTab.classList.add('active-tab');
+        loginTab.classList.remove('active-tab');
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+        signupStatus.textContent = ''; // Clear previous messages
+    };
+
+    loginTab.addEventListener('click', showLoginForm);
+    signupTab.addEventListener('click', showSignupForm);
+
+    // --- Submission Handlers ---
+
+    // Helper function to display status messages
+    const displayStatus = (element, message, isSuccess = false) => {
+        element.textContent = message;
+        element.style.color = isSuccess ? 'green' : 'red';
+    };
+
+    // 1. Handle Login Submission
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent default browser submission
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        displayStatus(loginStatus, 'Logging in...', false);
+
+        fetch("http://localhost:3000/api/auth/login", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        })
+        .then(async res => {
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || 'Login failed due to server error.');
+            }
+            return data;
+        })
+        .then(data => {
+            // Store token or user data in local storage/cookies
+            localStorage.setItem('authToken', data.token); 
+            displayStatus(loginStatus, 'Login successful! Redirecting...', true);
+            
+            // Redirect based on user role (assuming backend returns role)
+            switch (data.role) {
+                case 'admin':
+                    window.location.href = 'admin.html';
+                    break;
+                case 'ngo':
+                    window.location.href = 'ngo_dashboard.html';
+                    break;
+                case 'donor':
+                default:
+                    window.location.href = 'dashboard.html';
+                    break;
+            }
+        })
+        .catch(error => {
+            console.error('Login Error:', error);
+            displayStatus(loginStatus, error.message || 'Login failed. Check your credentials.', false);
+        });
+    });
+
+
+    // 2. Handle Sign Up Submission
+    signupForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent default browser submission
+
+        const name = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const role = document.getElementById('signup-role').value;
+
+        displayStatus(signupStatus, 'Registering account...', false);
+
+        fetch("http://localhost:3000/api/auth/signup", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, password, role }),
+        })
+        .then(async res => {
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || 'Registration failed.');
+            }
+            return data;
+        })
+        .then(data => {
+            displayStatus(signupStatus, 'Registration successful! Please log in.', true);
+            
+            // Optionally clear the form and switch back to login tab
+            signupForm.reset();
+            setTimeout(showLoginForm, 1500); // Switch after 1.5 seconds
+        })
+        .catch(error => {
+            console.error('Signup Error:', error);
+            displayStatus(signupStatus, error.message || 'Registration failed. Try a different email.', false);
+        });
+    });
+});
+</script>
+</body>
+</html>

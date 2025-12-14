@@ -1,0 +1,344 @@
+<style>
+    /* General Resets and Typography */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+/* Header Styling */
+header {
+    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover, nav a.active {
+    background-color: #2b7049;
+}
+
+
+
+/* --- Styles Specific to Admin Dashboard (Page 3) --- */
+
+/* Distinct Header for Admin */
+.admin-header {
+    background-color: #333; /* Darker header for admin area */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logout-link {
+    color: #ff6b6b;
+    font-size: 0.9em;
+    border: 1px solid #ff6b6b;
+}
+
+.logout-link:hover {
+    background-color: #ff6b6b;
+    color: white;
+}
+
+.admin-container {
+    max-width: 1200px; /* Wider container for data tables */
+}
+
+/* Panel Containers */
+.admin-panel {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.admin-panel h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    color: #333;
+}
+
+/* CRUD Form Grid */
+.crud-form .form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.crud-form .form-row .form-group {
+    flex: 1;
+}
+
+.crud-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+/* Data Tables */
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table th, table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: bold;
+}
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Status Badges */
+.status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.status.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status.completed {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+/* Action Buttons */
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: white;
+    transition: opacity 0.3s;
+}
+
+.action-btn:hover {
+    opacity: 0.8;
+}
+
+.create-btn {
+    background-color: #1a5632; /* Green for Create */
+    width: auto; /* Overriding full width from prev pages */
+    padding: 10px 20px;
+    margin-top: 10px;
+}
+
+.edit-btn {
+    background-color: #2196F3; /* Blue for Edit */
+    margin-right: 5px;
+}
+
+.delete-btn {
+    background-color: #f44336; /* Red for Delete */
+}
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Manage Causes</title>
+
+    <script defer src="admin.js"></script>
+</head>
+<body>
+
+    <header class="admin-header">
+        <div class="logo">SDNMS Admin Panel</div>
+        <nav>
+            <span>Welcome, <strong>Admin</strong></span>
+            <a href="home.html" class="logout-link">Logout</a>
+        </nav>
+    </header>
+
+    <main class="container admin-container">
+        
+        <section class="admin-panel">
+            <h2>Add New Cause</h2>
+            <form action="/add_cause" method="POST" class="crud-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cause Title</label>
+                        <input type="text" name="title" placeholder="e.g. Winter Relief Fund" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Goal Amount (PKR)</label>
+                        <input type="number" name="goal_amount" placeholder="500000" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Enter details..." required></textarea>
+                </div>
+
+                <button type="submit" class="action-btn create-btn">Create Cause</button>
+            </form>
+        </section>
+
+        <section class="admin-panel">
+            <h2>📋 Manage Active Causes</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Goal (PKR)</th>
+                            <th>Collected</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cause-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Smart Donation System - Internal Use Only</p>
+    </footer>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    alert("Please login as admin first.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const authHeaders = { Authorization: `Bearer ${token}` };
+
+  function loadCauses() {
+    fetch("http://localhost:3000/api/causes")
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text());
+        return res.json();
+      })
+      .then((causes) => {
+        const tableBody = document.getElementById("cause-table-body");
+        tableBody.innerHTML = "";
+
+        if (!causes || causes.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="6">No causes found.</td></tr>`;
+          return;
+        }
+
+        causes.forEach((cause) => {
+          const goal = Number(cause.goal || 0);
+          const collected = Number(cause.collected || 0);
+          const progress = goal > 0 ? Math.round((collected / goal) * 100) : 0;
+
+          const statusText = progress >= 100 ? "Completed" : "Active";
+          const statusClass = progress >= 100 ? "completed" : "active";
+
+          const row = `
+            <tr>
+              <td>${cause.id}</td>
+              <td>${cause.title}</td>
+              <td>${goal.toLocaleString()}</td>
+              <td>${collected.toLocaleString()}</td>
+              <td><span class="status ${statusClass}">${statusText}</span></td>
+              <td>
+                <button class="action-btn delete-btn" data-id="${cause.id}">Delete</button>
+              </td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
+
+        // attach delete listeners
+        document.querySelectorAll(".delete-btn").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-id");
+            if (!confirm(`Delete cause #${id}?`)) return;
+
+            try {
+              const res = await fetch(`http://localhost:3000/api/admin/causes/${id}`, {
+                method: "DELETE",
+                headers: authHeaders,
+              });
+
+              if (!res.ok) throw new Error(await res.text());
+              alert("Cause deleted successfully.");
+              loadCauses(); // refresh
+            } catch (err) {
+              console.error("Delete failed:", err);
+              alert("Delete failed. Make sure you are logged in as ADMIN.");
+            }
+          });
+        });
+      })
+      .catch((err) => {
+        console.error("Error fetching causes for admin panel:", err);
+        const tableBody = document.getElementById("cause-table-body");
+        tableBody.innerHTML = `<tr><td colspan="6">Failed to load causes. Check server connection.</td></tr>`;
+      });
+  }
+
+  loadCauses();
+});
+</script>
+
+</body>
+</html>
