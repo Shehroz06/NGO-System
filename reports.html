@@ -37,350 +37,180 @@ nav a:hover, nav a.active {
     background-color: #2b7049;
 }
 
-
-/* --- Styles Specific to Reports Page (Page 4) --- */
-
-/* Dashboard Grid for Aggregate Cards */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 25px;
-    margin-bottom: 40px;
-}
-
-.stat-card {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border-left: 5px solid #ccc; /* Default border color */
-    transition: transform 0.2s;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-}
-
-.stat-card h3 {
-    margin: 0 0 10px 0;
-    font-size: 1em;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.stat-number {
-    font-size: 2em;
+/* Donation Button Styling - ADDED FOR UNIFORMITY */
+.donate-main-btn {
+    background-color: #ff6347; /* Bright Tomato color */
+    color: white !important; /* Ensure visibility */
+    padding: 10px 20px !important;
+    border-radius: 5px;
     font-weight: bold;
-    margin: 0 0 10px 0;
-    color: #333;
+    text-transform: uppercase;
+    margin-left: 20px; /* Separator from other links */
+    transition: background-color 0.3s, transform 0.1s;
 }
 
-.stat-desc {
-    font-size: 0.8em;
-    background-color: #f0f0f0;
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    color: #555;
+.donate-main-btn:hover {
+    background-color: #e55338;
+    transform: translateY(-1px);
 }
 
-/* Card Color Variants */
-.stat-card.blue { border-left-color: #2196F3; }
-.stat-card.blue .stat-number { color: #2196F3; }
+/* Main Content Container */
+.container {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
 
-.stat-card.green { border-left-color: #4CAF50; }
-.stat-card.green .stat-number { color: #4CAF50; }
-
-.stat-card.orange { border-left-color: #ff9800; }
-.stat-card.orange .stat-number { color: #ff9800; }
-
-
-/* Report Panel Styling */
-.report-panel {
-    background: white;
-    padding: 30px;
+/* Cause Card Styling */
+.cause-card {
+    background-color: white;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.report-header {
+.cause-title {
+    color: #1a5632;
+    margin-top: 0;
+}
+
+.ngo-name {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.description {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    height: 15px;
+    background-color: #4CAF50; /* Primary success color */
+    transition: width 0.4s ease;
+    text-align: right;
+}
+
+/* Stats and Donate Button */
+.stats {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.report-header h2 {
-    margin: 0;
-    font-size: 1.4em;
-    color: #333;
-}
-
-.report-controls {
-    display: flex;
-    gap: 10px;
-}
-
-.report-controls select {
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-
-.report-btn {
-    background-color: #607d8b; /* Blue-grey for "tools" */
-    color: white;
-}
-
-/* Table overrides for Reports (Dense view) */
-.report-table th {
-    background-color: #eceff1;
-    color: #455a64;
-    text-transform: uppercase;
-    font-size: 0.85em;
-}
-
-.report-table td {
     font-size: 0.95em;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.donate-btn {
+    display: inline-block;
+    background-color: #f4a261; /* Orange/Gold color for call to action */
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.donate-btn:hover {
+    background-color: #e76f51;
+}
+
+/* Footer Styling */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 50px;
+    border-top: 1px solid #eee;
+    color: #777;
+    background-color: #fff;
 }
 </style>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analytics & Reports</title>
-
-    <script defer src="reports.js"></script>
 </head>
 <body>
 
-    <header class="admin-header">
-        <div class="logo">SDNMS Analytics</div>
-        <nav>
-            <a href="admin.html">Manage Causes</a>
-            <a href="reports.html" class="active">Reports</a>
-            <a href="index.html" class="logout-link">Logout</a>
-        </nav>
-    </header>
+<header>
+    <div class="logo">Smart Donation & NGO System</div>
+    <nav>
+        <a href="home.html" class="active">Causes</a>
+        <a href="dashboard.html">My Dashboard</a>
+        <a href="admin.html">Admin Panel</a>
+        <a href="reports.html">Reports</a>
+        <a href="login.html">Login / Register</a>
+        <a href="donate.html" class="donate-main-btn">Donate Now</a>
+    </nav>
+</header>
+<div class="container">
+    <h1>Current Donation Causes</h1>
 
-    <main class="container admin-container">
+    <div id="cause-container">
+        </div>
+</div>
 
-        <h1>Organization Impact Dashboard</h1>
-
-        <section class="dashboard-grid">
-            
-            <div class="stat-card blue">
-                <h3>Total Funds Raised</h3>
-                <p class="stat-number" id="total-funds-stat">PKR 45.2M</p>
-                <span class="stat-desc">SQL: <code>SUM(amount) FROM Donation</code></span>
-            </div>
-
-            <div class="stat-card green">
-                <h3>Active Volunteers</h3>
-                <p class="stat-number" id="active-volunteers-stat">1,240</p>
-                <span class="stat-desc">SQL: <code>COUNT(*) FROM Volunteer</code></span>
-            </div>
-
-            <div class="stat-card orange">
-                <h3>Highest Donation</h3>
-                <p class="stat-number" id="highest-donation-stat">PKR 500,000</p>
-                <span class="stat-desc">SQL: <code>MAX(amount) FROM Donation</code></span>
-            </div>
-
-        </section>
-
-        <section class="report-panel">
-            <h2>📜 System Audit Trail (AdminLogs)</h2>
-            <p>Records of critical administrative actions (e.g., Cause creation, user updates).</p>
-            
-            <div class="table-responsive">
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Log ID</th>
-                            <th>Timestamp</th>
-                            <th>Actor ID</th>
-                            <th>Action Performed</th>
-                        </tr>
-                    </thead>
-                    <tbody id="audit-log-body">
-                        </tbody>
-                </table>
-            </div>
-        </section>
-        
-        <section class="report-panel">
-            <h2>💰 Donation Breakdown by Category</h2>
-            <p>Analysis of funds collected across different cause categories.</p>
-            <div class="table-responsive">
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Cause Category</th>
-                            <th>Transaction Count</th>
-                            <th>Total Amount</th>
-                            <th>Avg. Donation</th>
-                        </tr>
-                    </thead>
-                    <tbody id="category-breakdown-body">
-                        </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="report-panel">
-            <h2>🤝 Volunteer Assignments (Complex Join)</h2>
-            <p>Lists volunteers and the specific events they are assigned to.</p>
-            
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>Volunteer Name</th>
-                        <th>Skill Set</th>
-                        <th>Assigned Event</th>
-                        <th>Event Date</th>
-                    </tr>
-                </thead>
-                <tbody id="volunteer-assignments-body">
-                    </tbody>
-            </table>
-        </section>
-
-    </main>
+<footer>
+    <p>&copy; 2025 Smart Donation & NGO Management System</p>
+</footer>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    alert("Please login as admin first.");
-    window.location.href = "login.html";
-    return;
-  }
+    // ✅ Node.js API integration
 
-  const authHeaders = { Authorization: `Bearer ${token}` };
-  const formatPKR = (amount) => `PKR ${Number(amount || 0).toLocaleString()}`;
+fetch("http://localhost:3000/api/causes")
+  .then(res => res.json())
+  .then(causes => {
 
-  // --- 1. Fetch Dashboard Statistics ---
-  function fetchDashboardStats() {
-    fetch("http://localhost:3000/api/stats", { headers: authHeaders })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((stats) => {
-        document.getElementById("total-funds-stat").textContent = formatPKR(stats.totalFundsRaised);
-        document.getElementById("active-volunteers-stat").textContent = Number(stats.activeVolunteers || 0).toLocaleString();
-        document.getElementById("highest-donation-stat").textContent = formatPKR(stats.highestDonation);
-      })
-      .catch((err) => {
-        console.error("Error fetching dashboard stats:", err);
-        alert("Cannot load reports. Make sure you are logged in as ADMIN.");
-      });
-  }
+    const container = document.getElementById("cause-container");
 
-  // --- 2. Fetch System Audit Log ---
-  function fetchAuditLog() {
-    fetch("http://localhost:3000/api/audit", { headers: authHeaders })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((logs) => {
-        const tableBody = document.getElementById("audit-log-body");
-        tableBody.innerHTML = "";
+    causes.forEach(cause => {
 
-        if (!logs || logs.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="4">No audit logs found.</td></tr>`;
-          return;
-        }
+        const progress = Math.round(
+          (cause.collected / cause.goal) * 100
+        );
 
-        logs.forEach((log) => {
-          const row = `
-            <tr>
-              <td>${log.id}</td>
-              <td>${new Date(log.timestamp).toLocaleString()}</td>
-              <td>${log.actorId} (${log.actorName || "Unknown"})</td>
-              <td><strong>${log.actionType}</strong>: ${log.actionDetails}</td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
-        });
-      })
-      .catch((err) => console.error("Error fetching audit logs:", err));
-  }
+        container.innerHTML += `
+          <div class="cause-card">
+              <h2 class="cause-title">${cause.title}</h2>
+              <p class="ngo-name">Managed by:
+                <b>${cause.ngo}</b>
+              </p>
+              <p class="description">${cause.description}</p>
 
-  // --- 3. Fetch Donation Category Breakdown ---
-  function fetchCategoryBreakdown() {
-    fetch("http://localhost:3000/api/category_breakdown", { headers: authHeaders })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((categories) => {
-        const tableBody = document.getElementById("category-breakdown-body");
-        tableBody.innerHTML = "";
+              <div class="progress-bar-container">
+                  <div class="progress-bar"
+                       style="width: ${progress}%\">
+                  </div>
+              </div>
 
-        if (!categories || categories.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="4">No category breakdown data.</td></tr>`;
-          return;
-        }
+              <div class="stats">
+                  <p>Goal: <b>PKR ${cause.goal.toLocaleString()}</b></p>
+                  <p>Collected:
+                    <b>PKR ${cause.collected.toLocaleString()}
+                    (${progress}%)</b>
+                  </p>
+              </div>
 
-        categories.forEach((cat) => {
-          const row = `
-            <tr>
-              <td>${cat.categoryName}</td>
-              <td>${Number(cat.transactionCount || 0).toLocaleString()}</td>
-              <td>${formatPKR(cat.totalAmount)}</td>
-              <td>${formatPKR(cat.avgDonation)}</td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
-        });
-      })
-      .catch((err) => console.error("Error fetching category breakdown:", err));
-  }
-
-  // --- 4. Fetch Volunteer Assignments ---
-  function fetchVolunteerAssignments() {
-    fetch("http://localhost:3000/api/volunteer_assignments", { headers: authHeaders })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((assignments) => {
-        const tableBody = document.getElementById("volunteer-assignments-body");
-        tableBody.innerHTML = "";
-
-        if (!assignments || assignments.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="4">No volunteer assignments found.</td></tr>`;
-          return;
-        }
-
-        assignments.forEach((assignment) => {
-          const row = `
-            <tr>
-              <td>${assignment.volunteerName}</td>
-              <td>${assignment.skillSet || ""}</td>
-              <td>${assignment.assignedEvent || ""}</td>
-              <td>${assignment.eventDate ? new Date(assignment.eventDate).toLocaleDateString() : ""}</td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
-        });
-      })
-      .catch((err) => console.error("Error fetching volunteer assignments:", err));
-  }
-
-  fetchDashboardStats();
-  fetchAuditLog();
-  fetchCategoryBreakdown();
-  fetchVolunteerAssignments();
-});
+              <a href="donate.html?cause_id=${cause.id}"
+                 class="donate-btn">
+                 Donate Now
+              </a>
+          </div>
+        `;
+    });
+  })
+  .catch(err => {
+    console.error("Error fetching causes:", err);
+    const container = document.getElementById("cause-container");
+    container.innerHTML = `<p style="color: red;">Failed to load donation causes. Check server connection.</p>`;
+  });
 </script>
-
 </body>
 </html>

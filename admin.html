@@ -37,240 +37,327 @@ nav a:hover, nav a.active {
     background-color: #2b7049;
 }
 
+/* Donation Button Styling - ADDED FOR UNIFORMITY */
+.donate-main-btn {
+    background-color: #ff6347; /* Bright Tomato color */
+    color: white !important; /* Ensure visibility */
+    padding: 10px 20px !important;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 20px; /* Separator from other links */
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.donate-main-btn:hover {
+    background-color: #e55338;
+    transform: translateY(-1px);
+}
 
 
 /* --- Styles Specific to Admin Dashboard (Page 3) --- */
 
-/* Distinct Header for Admin */
-.admin-header {
-    background-color: #333; /* Darker header for admin area */
-    color: white;
-    padding: 15px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
 }
 
-.logout-link {
-    color: #ff6b6b;
-    font-size: 0.9em;
-    border: 1px solid #ff6b6b;
-}
-
-.logout-link:hover {
-    background-color: #ff6b6b;
-    color: white;
-}
-
-.admin-container {
-    max-width: 1200px; /* Wider container for data tables */
-}
-
-/* Panel Containers */
-.admin-panel {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    margin-bottom: 30px;
-}
-
-.admin-panel h2 {
-    margin-top: 0;
-    border-bottom: 2px solid #eee;
+h1 {
+    color: #1a5632;
+    border-bottom: 2px solid #ddd;
     padding-bottom: 10px;
-    color: #333;
+    margin-bottom: 20px;
 }
 
-/* CRUD Form Grid */
-.crud-form .form-row {
-    display: flex;
-    gap: 20px;
+/* Cause Management Table */
+.cause-management {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.crud-form .form-row .form-group {
-    flex: 1;
-}
-
-.crud-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: inherit;
-    resize: vertical;
-}
-
-/* Data Tables */
-.table-responsive {
-    overflow-x: auto;
+.cause-management h2 {
+    margin-top: 0;
+    color: #f4a261;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
-table th, table td {
-    padding: 12px 15px;
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    font-size: 0.9em;
 }
 
-table th {
-    background-color: #f8f9fa;
-    color: #333;
+th {
+    background-color: #f0f0f0;
     font-weight: bold;
-}
-
-table tr:hover {
-    background-color: #f1f1f1;
 }
 
 /* Status Badges */
 .status {
     padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 0.85em;
+    border-radius: 4px;
     font-weight: bold;
+    font-size: 0.8em;
 }
 
 .status.active {
-    background-color: #e8f5e9;
-    color: #2e7d32;
+    background-color: #d4edda;
+    color: #155724;
 }
 
-.status.completed {
-    background-color: #e3f2fd;
-    color: #1565c0;
+.status.closed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status.draft {
+    background-color: #fff3cd;
+    color: #856404;
 }
 
 /* Action Buttons */
 .action-btn {
-    padding: 6px 12px;
+    padding: 6px 10px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 0.85em;
     font-weight: bold;
-    color: white;
-    transition: opacity 0.3s;
-}
-
-.action-btn:hover {
-    opacity: 0.8;
-}
-
-.create-btn {
-    background-color: #1a5632; /* Green for Create */
-    width: auto; /* Overriding full width from prev pages */
-    padding: 10px 20px;
-    margin-top: 10px;
-}
-
-.edit-btn {
-    background-color: #2196F3; /* Blue for Edit */
+    transition: background-color 0.3s;
     margin-right: 5px;
 }
 
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
+
 .delete-btn {
-    background-color: #f44336; /* Red for Delete */
+    background-color: #e76f51;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #d65839;
+}
+
+/* Add Cause Button */
+.add-cause-btn {
+    background-color: #1a5632;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+}
+
+.add-cause-btn:hover {
+    background-color: #2b7049;
+}
+
+/* Form Styling */
+#add-cause-form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+    display: none; /* Initially hidden */
+}
+
+#add-cause-form h3 {
+    margin-top: 0;
+    color: #1a5632;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.submit-form-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.cancel-form-btn {
+    background-color: #ccc;
+    color: #333;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-left: 10px;
+}
+
+/* Utility */
+.hidden {
+    display: none;
 }
 </style>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Manage Causes</title>
-
-    <script defer src="admin.js"></script>
 </head>
 <body>
 
-    <header class="admin-header">
-        <div class="logo">SDNMS Admin Panel</div>
-        <nav>
-            <span>Welcome, <strong>Admin</strong></span>
-            <a href="home.html" class="logout-link">Logout</a>
-        </nav>
-    </header>
+<header>
+    <div class="logo">Smart Donation & NGO System</div>
+    <nav>
+        <a href="home.html">Causes</a>
+        <a href="dashboard.html">My Dashboard</a>
+        <a href="admin.html" class="active">Admin Panel</a>
+        <a href="reports.html">Reports</a>
+        <a href="login.html">Login / Register</a>
+        <a href="donate.html" class="donate-main-btn">Donate Now</a>
+    </nav>
+</header>
+<div class="container">
+    <h1>Admin Panel - Cause Management</h1>
 
-    <main class="container admin-container">
-        
-        <section class="admin-panel">
-            <h2>Add New Cause</h2>
-            <form action="/add_cause" method="POST" class="crud-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Cause Title</label>
-                        <input type="text" name="title" placeholder="e.g. Winter Relief Fund" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Goal Amount (PKR)</label>
-                        <input type="number" name="goal_amount" placeholder="500000" required>
-                    </div>
-                </div>
+    <div id="auth-status" class="status" style="display: none; margin-bottom: 20px;"></div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Start Date</label>
-                        <input type="date" name="start_date" required>
-                    </div>
-                    <div class="form-group">
-                        <label>End Date</label>
-                        <input type="date" name="end_date" required>
-                    </div>
-                </div>
+    <div class="cause-management">
+        <button class="add-cause-btn" id="show-add-form-btn">Add New Cause</button>
 
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea name="description" rows="3" placeholder="Enter details..." required></textarea>
-                </div>
+        <form id="add-cause-form" class="hidden">
+            <h3>Add/Edit Cause Details</h3>
+            <input type="hidden" id="cause-id-field">
 
-                <button type="submit" class="action-btn create-btn">Create Cause</button>
-            </form>
-        </section>
-
-        <section class="admin-panel">
-            <h2>📋 Manage Active Causes</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>Goal (PKR)</th>
-                            <th>Collected</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cause-table-body">
-                        </tbody>
-                </table>
+            <div class="form-group">
+                <label for="cause-title">Title:</label>
+                <input type="text" id="cause-title" required>
             </div>
-        </section>
+            <div class="form-group">
+                <label for="cause-description">Description:</label>
+                <textarea id="cause-description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="cause-goal">Goal (PKR):</label>
+                <input type="number" id="cause-goal" required min="1000">
+            </div>
+            <div class="form-group">
+                <label for="cause-ngo">NGO Name:</label>
+                <input type="text" id="cause-ngo" required>
+            </div>
+            <div class="form-group">
+                <label for="cause-status">Status:</label>
+                <select id="cause-status" required>
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </div>
 
-    </main>
+            <button type="submit" class="submit-form-btn">Save Cause</button>
+            <button type="button" class="cancel-form-btn" id="cancel-add-form-btn">Cancel</button>
+        </form>
 
-    <footer>
-        <p>&copy; 2025 Smart Donation System - Internal Use Only</p>
-    </footer>
+        <h2>All Causes</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>NGO</th>
+                    <th>Goal (PKR)</th>
+                    <th>Collected (PKR)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cause-table-body">
+                <tr><td colspan="7">Loading causes...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("authToken");
-  if (!token) {
-    alert("Please login as admin first.");
+document.addEventListener('DOMContentLoaded', () => {
+  // Helper to format currency
+  const formatPKR = (amount) => {
+    return Number(amount).toLocaleString('en-PK');
+  };
+
+  // Get token and setup headers (assuming token is stored on login)
+  const authToken = localStorage.getItem("authToken");
+  const userRole = localStorage.getItem("userRole");
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${authToken}`,
+  };
+
+  // --- 0. Auth Check and Logout ---
+  if (!authToken || userRole !== 'ngo_staff') {
+    alert("Access Denied. You must be logged in as NGO Staff/Admin.");
     window.location.href = "login.html";
     return;
   }
 
-  const authHeaders = { Authorization: `Bearer ${token}` };
+  // --- 1. Form Visibility Logic ---
+  const addForm = document.getElementById("add-cause-form");
+  const showBtn = document.getElementById("show-add-form-btn");
+  const cancelBtn = document.getElementById("cancel-add-form-btn");
+  const submitBtn = document.querySelector("#add-cause-form .submit-form-btn");
 
+  function resetForm() {
+    addForm.reset();
+    document.getElementById("cause-id-field").value = "";
+    submitBtn.textContent = "Save Cause";
+    addForm.classList.add("hidden");
+    showBtn.textContent = "Add New Cause";
+  }
+
+  showBtn.addEventListener("click", () => {
+    addForm.classList.toggle("hidden");
+    showBtn.textContent = addForm.classList.contains("hidden") ? "Add New Cause" : "Hide Form";
+    resetForm();
+    if (!addForm.classList.contains("hidden")) {
+        // Only reset if showing from a hidden state
+        document.getElementById("cause-id-field").value = ""; 
+    }
+  });
+
+  cancelBtn.addEventListener("click", resetForm);
+
+  // --- 2. Load Causes (Read) ---
   function loadCauses() {
-    fetch("http://localhost:3000/api/causes")
+    fetch("http://localhost:3000/api/admin/causes", { headers: authHeaders })
       .then(async (res) => {
         if (!res.ok) throw new Error(await res.text());
         return res.json();
@@ -280,31 +367,51 @@ document.addEventListener("DOMContentLoaded", () => {
         tableBody.innerHTML = "";
 
         if (!causes || causes.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="6">No causes found.</td></tr>`;
+          tableBody.innerHTML = `<tr><td colspan="7">No causes found.</td></tr>`;
           return;
         }
 
         causes.forEach((cause) => {
-          const goal = Number(cause.goal || 0);
-          const collected = Number(cause.collected || 0);
-          const progress = goal > 0 ? Math.round((collected / goal) * 100) : 0;
-
-          const statusText = progress >= 100 ? "Completed" : "Active";
-          const statusClass = progress >= 100 ? "completed" : "active";
-
+          let statusText = cause.status.charAt(0).toUpperCase() + cause.status.slice(1);
+          let statusClass = cause.status; // active, closed, draft
+          
           const row = `
             <tr>
               <td>${cause.id}</td>
               <td>${cause.title}</td>
-              <td>${goal.toLocaleString()}</td>
-              <td>${collected.toLocaleString()}</td>
+              <td>${cause.ngo}</td>
+              <td>${formatPKR(cause.goal)}</td>
+              <td>${formatPKR(cause.collected)}</td>
               <td><span class="status ${statusClass}">${statusText}</span></td>
               <td>
+                <button class="action-btn edit-btn" data-id="${cause.id}">Edit</button>
                 <button class="action-btn delete-btn" data-id="${cause.id}">Delete</button>
               </td>
             </tr>
           `;
           tableBody.innerHTML += row;
+        });
+
+        // Attach edit listeners
+        document.querySelectorAll(".edit-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const id = btn.getAttribute("data-id");
+                const cause = causes.find(c => c.id == id);
+                if (cause) {
+                    // Populate form for editing
+                    document.getElementById("cause-id-field").value = cause.id;
+                    document.getElementById("cause-title").value = cause.title;
+                    document.getElementById("cause-description").value = cause.description;
+                    document.getElementById("cause-goal").value = cause.goal;
+                    document.getElementById("cause-ngo").value = cause.ngo;
+                    document.getElementById("cause-status").value = cause.status;
+
+                    // Show form and update button text
+                    addForm.classList.remove("hidden");
+                    showBtn.textContent = "Hide Form";
+                    submitBtn.textContent = "Update Cause";
+                }
+            });
         });
 
         // attach delete listeners
@@ -332,13 +439,54 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((err) => {
         console.error("Error fetching causes for admin panel:", err);
         const tableBody = document.getElementById("cause-table-body");
-        tableBody.innerHTML = `<tr><td colspan="6">Failed to load causes. Check server connection.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7">Failed to load causes. Check server connection.</td></tr>`;
       });
   }
+
+  // --- 3. Handle Add/Edit Form Submission (Create/Update) ---
+  document.getElementById('add-cause-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const id = document.getElementById("cause-id-field").value;
+    const isEdit = !!id;
+
+    const causeData = {
+        title: document.getElementById('cause-title').value,
+        description: document.getElementById('cause-description').value,
+        goal: document.getElementById('cause-goal').value,
+        ngo: document.getElementById('cause-ngo').value,
+        status: document.getElementById('cause-status').value,
+        // Collected amount is managed by API, but for simplicity in ADD, initialize to 0
+        ...(isEdit ? {} : { collected: 0 }) 
+    };
+
+    const method = isEdit ? 'PUT' : 'POST';
+    const url = isEdit ? `http://localhost:3000/api/admin/causes/${id}` : `http://localhost:3000/api/admin/causes`;
+    const actionText = isEdit ? 'Updating' : 'Adding';
+    const successText = isEdit ? 'updated' : 'added';
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: authHeaders,
+            body: JSON.stringify(causeData),
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+        
+        alert(`Cause ${successText} successfully.`);
+        resetForm();
+        loadCauses(); // Refresh the table
+
+    } catch (err) {
+        console.error(`${actionText} failed:`, err);
+        alert(`${actionText} cause failed. Error: ${err.message}`);
+    }
+  });
+
 
   loadCauses();
 });
 </script>
-
 </body>
 </html>
