@@ -1,293 +1,201 @@
-<style>
-    /* General Resets and Typography */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
-    color: #333;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Smart NGO System</title>
+    <style>
+        /* General Resets and Typography */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
 
-/* Header Styling */
-header {
-    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
-    color: white;
-    padding: 15px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        /* Header Styling */
+        header {
+            background-color: #1a5632;
+            color: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-.logo {
-    font-size: 1.5em;
-    font-weight: bold;
-}
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 25px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
 
-nav a:hover, nav a.active {
-    background-color: #2b7049;
-}
+        nav a:hover, nav a.active {
+            background-color: #2b7049;
+        }
 
-/* Donation Button Styling - ADDED FOR UNIFORMITY */
-.donate-main-btn {
-    background-color: #ff6347; /* Bright Tomato color */
-    color: white !important; /* Ensure visibility */
-    padding: 10px 20px !important;
-    border-radius: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-left: 20px; /* Separator from other links */
-    transition: background-color 0.3s, transform 0.1s;
-}
+        .donate-main-btn {
+            background-color: #ff6347;
+            color: white !important;
+            font-weight: bold;
+        }
 
-.donate-main-btn:hover {
-    background-color: #e55338;
-    transform: translateY(-1px);
-}
+        /* Main Content Container */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
 
+        h1 {
+            color: #1a5632;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
 
-/* --- Styles Specific to Admin Dashboard (Page 3) --- */
+        /* Cause Management Card */
+        .management-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
 
-.container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
+        .management-card h2 {
+            margin-top: 0;
+            color: #f4a261;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+        }
 
-h1 {
-    color: #1a5632;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
+        /* Add Cause Button */
+        .add-cause-btn {
+            background-color: #1a5632;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 25px;
+            transition: opacity 0.3s;
+        }
 
-/* Cause Management Table */
-.cause-management {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
+        .add-cause-btn:hover { opacity: 0.9; }
 
-.cause-management h2 {
-    margin-top: 0;
-    color: #f4a261;
-}
+        /* Form Styling */
+        #add-cause-form {
+            background-color: #f9f9f9;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+        }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-    font-size: 0.9em;
-}
+        .submit-form-btn { background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .cancel-form-btn { background-color: #ccc; color: #333; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; }
 
-th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-}
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-/* Status Badges */
-.status {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.8em;
-}
+        th { background-color: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #eee; font-size: 14px; color: #666; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; }
 
-.status.active {
-    background-color: #d4edda;
-    color: #155724;
-}
+        /* Status Badges */
+        .status { padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .status.active { background-color: #d4edda; color: #155724; }
+        .status.closed { background-color: #f8d7da; color: #721c24; }
+        .status.draft { background-color: #fff3cd; color: #856404; }
 
-.status.closed {
-    background-color: #f8d7da;
-    color: #721c24;
-}
+        /* Action Buttons */
+        .action-btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px; color: white; }
+        .edit-btn { background-color: #4CAF50; }
+        .delete-btn { background-color: #e76f51; }
 
-.status.draft {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-/* Action Buttons */
-.action-btn {
-    padding: 6px 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    font-weight: bold;
-    transition: background-color 0.3s;
-    margin-right: 5px;
-}
-
-.edit-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.edit-btn:hover {
-    background-color: #45a049;
-}
-
-.delete-btn {
-    background-color: #e76f51;
-    color: white;
-}
-
-.delete-btn:hover {
-    background-color: #d65839;
-}
-
-/* Add Cause Button */
-.add-cause-btn {
-    background-color: #1a5632;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    margin-bottom: 20px;
-    transition: background-color 0.3s;
-}
-
-.add-cause-btn:hover {
-    background-color: #2b7049;
-}
-
-/* Form Styling */
-#add-cause-form {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #eee;
-    display: none; /* Initially hidden */
-}
-
-#add-cause-form h3 {
-    margin-top: 0;
-    color: #1a5632;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.submit-form-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-.cancel-form-btn {
-    background-color: #ccc;
-    color: #333;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    margin-left: 10px;
-}
-
-/* Utility */
-.hidden {
-    display: none;
-}
-</style>
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
 <header>
-    <div class="logo">Smart Donation & NGO System</div>
-    <nav>
+    <div class="logo">Smart NGO System</div>
+    <nav id="navbar">
         <a href="home.html">Causes</a>
         <a href="dashboard.html">My Dashboard</a>
         <a href="admin.html" class="active">Admin Panel</a>
         <a href="reports.html">Reports</a>
-        <a href="login.html">Login / Register</a>
+        <a href="login.html" onclick="localStorage.clear()">Logout</a>
         <a href="donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
 </header>
+
 <div class="container">
     <h1>Admin Panel - Cause Management</h1>
 
-    <div id="auth-status" class="status" style="display: none; margin-bottom: 20px;"></div>
-
-    <div class="cause-management">
+    <div class="management-card">
         <button class="add-cause-btn" id="show-add-form-btn">Add New Cause</button>
 
         <form id="add-cause-form" class="hidden">
-            <h3>Add/Edit Cause Details</h3>
+            <h3 id="form-title">Create New Donation Cause</h3>
             <input type="hidden" id="cause-id-field">
 
             <div class="form-group">
-                <label for="cause-title">Title:</label>
-                <input type="text" id="cause-title" required>
+                <label>Title</label>
+                <input type="text" id="cause-title" required placeholder="e.g., Flood Relief 2025">
             </div>
             <div class="form-group">
-                <label for="cause-description">Description:</label>
+                <label>Description</label>
                 <textarea id="cause-description" rows="4" required></textarea>
             </div>
-            <div class="form-group">
-                <label for="cause-goal">Goal (PKR):</label>
-                <input type="number" id="cause-goal" required min="1000">
+            <div class="form-group" style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label>Goal (PKR)</label>
+                    <input type="number" id="cause-goal" required min="1000">
+                </div>
+                <div style="flex: 1;">
+                    <label>Status</label>
+                    <select id="cause-status" required>
+                        <option value="draft">Draft</option>
+                        <option value="active">Active</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
             </div>
             <div class="form-group">
-                <label for="cause-ngo">NGO Name:</label>
+                <label>NGO Name</label>
                 <input type="text" id="cause-ngo" required>
-            </div>
-            <div class="form-group">
-                <label for="cause-status">Status:</label>
-                <select id="cause-status" required>
-                    <option value="draft">Draft</option>
-                    <option value="active">Active</option>
-                    <option value="closed">Closed</option>
-                </select>
             </div>
 
             <button type="submit" class="submit-form-btn">Save Cause</button>
             <button type="button" class="cancel-form-btn" id="cancel-add-form-btn">Cancel</button>
         </form>
 
-        <h2>All Causes</h2>
+        <h2>Existing Causes</h2>
         <table>
             <thead>
                 <tr>
@@ -301,7 +209,7 @@ th {
                 </tr>
             </thead>
             <tbody id="cause-table-body">
-                <tr><td colspan="7">Loading causes...</td></tr>
+                <tr><td colspan="7">Loading management data...</td></tr>
             </tbody>
         </table>
     </div>
@@ -309,183 +217,124 @@ th {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // Helper to format currency
-  const formatPKR = (amount) => {
-    return Number(amount).toLocaleString('en-PK');
-  };
+    const token = localStorage.getItem("authToken");
+    const role = localStorage.getItem("userRole");
 
-  // Get token and setup headers (assuming token is stored on login)
-  const authToken = localStorage.getItem("authToken");
-  const userRole = localStorage.getItem("userRole");
-  const authHeaders = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${authToken}`,
-  };
-
-  // --- 0. Auth Check and Logout ---
-  if (!authToken || userRole !== 'ngo_staff') {
-    alert("Access Denied. You must be logged in as NGO Staff/Admin.");
-    window.location.href = "login.html";
-    return;
-  }
-
-  // --- 1. Form Visibility Logic ---
-  const addForm = document.getElementById("add-cause-form");
-  const showBtn = document.getElementById("show-add-form-btn");
-  const cancelBtn = document.getElementById("cancel-add-form-btn");
-  const submitBtn = document.querySelector("#add-cause-form .submit-form-btn");
-
-  function resetForm() {
-    addForm.reset();
-    document.getElementById("cause-id-field").value = "";
-    submitBtn.textContent = "Save Cause";
-    addForm.classList.add("hidden");
-    showBtn.textContent = "Add New Cause";
-  }
-
-  showBtn.addEventListener("click", () => {
-    addForm.classList.toggle("hidden");
-    showBtn.textContent = addForm.classList.contains("hidden") ? "Add New Cause" : "Hide Form";
-    resetForm();
-    if (!addForm.classList.contains("hidden")) {
-        // Only reset if showing from a hidden state
-        document.getElementById("cause-id-field").value = ""; 
+    // 1. RBAC & Security Check
+    if (!token || role !== 'ngo_staff') {
+        alert("Access Denied. Admins only.");
+        window.location.href = "login.html";
+        return;
     }
-  });
 
-  cancelBtn.addEventListener("click", resetForm);
+    const authHeaders = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
 
-  // --- 2. Load Causes (Read) ---
-  function loadCauses() {
-    fetch("http://localhost:3000/api/admin/causes", { headers: authHeaders })
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text());
-        return res.json();
-      })
-      .then((causes) => {
-        const tableBody = document.getElementById("cause-table-body");
-        tableBody.innerHTML = "";
+    // 2. UI Elements
+    const addForm = document.getElementById("add-cause-form");
+    const showBtn = document.getElementById("show-add-form-btn");
+    const cancelBtn = document.getElementById("cancel-add-form-btn");
+    const submitBtn = document.querySelector(".submit-form-btn");
+    const formTitle = document.getElementById("form-title");
 
-        if (!causes || causes.length === 0) {
-          tableBody.innerHTML = `<tr><td colspan="7">No causes found.</td></tr>`;
-          return;
+    // 3. Form Toggle Logic
+    showBtn.addEventListener("click", () => {
+        addForm.classList.toggle("hidden");
+        if (!addForm.classList.contains("hidden")) {
+            addForm.reset();
+            document.getElementById("cause-id-field").value = "";
+            formTitle.textContent = "Create New Donation Cause";
+            submitBtn.textContent = "Save Cause";
         }
+    });
 
-        causes.forEach((cause) => {
-          let statusText = cause.status.charAt(0).toUpperCase() + cause.status.slice(1);
-          let statusClass = cause.status; // active, closed, draft
-          
-          const row = `
-            <tr>
-              <td>${cause.id}</td>
-              <td>${cause.title}</td>
-              <td>${cause.ngo}</td>
-              <td>${formatPKR(cause.goal)}</td>
-              <td>${formatPKR(cause.collected)}</td>
-              <td><span class="status ${statusClass}">${statusText}</span></td>
-              <td>
-                <button class="action-btn edit-btn" data-id="${cause.id}">Edit</button>
-                <button class="action-btn delete-btn" data-id="${cause.id}">Delete</button>
-              </td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
-        });
+    cancelBtn.addEventListener("click", () => addForm.classList.add("hidden"));
 
-        // Attach edit listeners
-        document.querySelectorAll(".edit-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                const id = btn.getAttribute("data-id");
-                const cause = causes.find(c => c.id == id);
-                if (cause) {
-                    // Populate form for editing
+    // 4. Load & Render Table
+    function loadCauses() {
+        fetch("http://localhost:3000/api/admin/causes", { headers: authHeaders })
+            .then(res => res.json())
+            .then(causes => {
+                const tbody = document.getElementById("cause-table-body");
+                tbody.innerHTML = causes.length ? "" : "<tr><td colspan='7'>No causes found.</td></tr>";
+
+                causes.forEach(cause => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>#${cause.id}</td>
+                            <td><strong>${cause.title}</strong></td>
+                            <td>${cause.ngo}</td>
+                            <td>${Number(cause.goal).toLocaleString()}</td>
+                            <td>${Number(cause.collected).toLocaleString()}</td>
+                            <td><span class="status ${cause.status}">${cause.status.toUpperCase()}</span></td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="editCause(${cause.id})">Edit</button>
+                                <button class="action-btn delete-btn" onclick="deleteCause(${cause.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                // Note: edit/delete functions attached to window for global scope
+                window.editCause = (id) => {
+                    const cause = causes.find(c => c.id == id);
                     document.getElementById("cause-id-field").value = cause.id;
                     document.getElementById("cause-title").value = cause.title;
                     document.getElementById("cause-description").value = cause.description;
                     document.getElementById("cause-goal").value = cause.goal;
                     document.getElementById("cause-ngo").value = cause.ngo;
                     document.getElementById("cause-status").value = cause.status;
-
-                    // Show form and update button text
+                    
                     addForm.classList.remove("hidden");
-                    showBtn.textContent = "Hide Form";
+                    formTitle.textContent = "Edit Cause: " + cause.title;
                     submitBtn.textContent = "Update Cause";
-                }
+                    window.scrollTo(0, 0);
+                };
             });
+    }
+
+    // 5. Delete Logic
+    window.deleteCause = async (id) => {
+        if (!confirm("Are you sure you want to delete this cause?")) return;
+        const res = await fetch(`http://localhost:3000/api/admin/causes/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders
         });
-
-        // attach delete listeners
-        document.querySelectorAll(".delete-btn").forEach((btn) => {
-          btn.addEventListener("click", async () => {
-            const id = btn.getAttribute("data-id");
-            if (!confirm(`Delete cause #${id}?`)) return;
-
-            try {
-              const res = await fetch(`http://localhost:3000/api/admin/causes/${id}`, {
-                method: "DELETE",
-                headers: authHeaders,
-              });
-
-              if (!res.ok) throw new Error(await res.text());
-              alert("Cause deleted successfully.");
-              loadCauses(); // refresh
-            } catch (err) {
-              console.error("Delete failed:", err);
-              alert("Delete failed. Make sure you are logged in as ADMIN.");
-            }
-          });
-        });
-      })
-      .catch((err) => {
-        console.error("Error fetching causes for admin panel:", err);
-        const tableBody = document.getElementById("cause-table-body");
-        tableBody.innerHTML = `<tr><td colspan="7">Failed to load causes. Check server connection.</td></tr>`;
-      });
-  }
-
-  // --- 3. Handle Add/Edit Form Submission (Create/Update) ---
-  document.getElementById('add-cause-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const id = document.getElementById("cause-id-field").value;
-    const isEdit = !!id;
-
-    const causeData = {
-        title: document.getElementById('cause-title').value,
-        description: document.getElementById('cause-description').value,
-        goal: document.getElementById('cause-goal').value,
-        ngo: document.getElementById('cause-ngo').value,
-        status: document.getElementById('cause-status').value,
-        // Collected amount is managed by API, but for simplicity in ADD, initialize to 0
-        ...(isEdit ? {} : { collected: 0 }) 
+        if (res.ok) { alert("Cause deleted."); loadCauses(); }
     };
 
-    const method = isEdit ? 'PUT' : 'POST';
-    const url = isEdit ? `http://localhost:3000/api/admin/causes/${id}` : `http://localhost:3000/api/admin/causes`;
-    const actionText = isEdit ? 'Updating' : 'Adding';
-    const successText = isEdit ? 'updated' : 'added';
+    // 6. Submit Logic (Add/Update)
+    addForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("cause-id-field").value;
+        const url = id ? `http://localhost:3000/api/admin/causes/${id}` : `http://localhost:3000/api/admin/causes`;
+        const method = id ? 'PUT' : 'POST';
 
-    try {
+        const body = {
+            title: document.getElementById('cause-title').value,
+            description: document.getElementById('cause-description').value,
+            goal: document.getElementById('cause-goal').value,
+            ngo: document.getElementById('cause-ngo').value,
+            status: document.getElementById('cause-status').value
+        };
+
         const res = await fetch(url, {
-            method: method,
+            method,
             headers: authHeaders,
-            body: JSON.stringify(causeData),
+            body: JSON.stringify(body)
         });
 
-        if (!res.ok) throw new Error(await res.text());
-        
-        alert(`Cause ${successText} successfully.`);
-        resetForm();
-        loadCauses(); // Refresh the table
+        if (res.ok) {
+            alert("Success!");
+            addForm.classList.add("hidden");
+            loadCauses();
+        } else {
+            alert("Error saving cause.");
+        }
+    });
 
-    } catch (err) {
-        console.error(`${actionText} failed:`, err);
-        alert(`${actionText} cause failed. Error: ${err.message}`);
-    }
-  });
-
-
-  loadCauses();
+    loadCauses();
 });
 </script>
 </body>

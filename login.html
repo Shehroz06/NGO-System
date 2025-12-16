@@ -1,358 +1,238 @@
-<style>
-    
-/* General Resets and Typography */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
-    color: #333;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login & Register - Smart NGO System</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-color: #f4f7f6; 
+            margin: 0; 
+            padding: 0; 
+        }
 
-/* Header Styling */
-header {
-    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
-    color: white;
-    padding: 15px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        header { 
+            background-color: #1a5632; 
+            color: white; 
+            padding: 15px 50px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
 
-.logo {
-    font-size: 1.5em;
-    font-weight: bold;
-}
+        .container { 
+            display: flex; 
+            justify-content: center; 
+            padding: 50px 20px; 
+        }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 25px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
+        .auth-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 12px; 
+            width: 100%;
+            max-width: 450px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        }
 
-nav a:hover, nav a.active {
-    background-color: #2b7049;
-}
+        /* Tabs for switching between Login and Register */
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
 
-/* Donation Button Styling - ADDED FOR UNIFORMITY */
-.donate-main-btn {
-    background-color: #ff6347; /* Bright Tomato color */
-    color: white !important; /* Ensure visibility */
-    padding: 10px 20px !important;
-    border-radius: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-left: 20px; /* Separator from other links */
-    transition: background-color 0.3s, transform 0.1s;
-}
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            color: #666;
+            font-weight: bold;
+        }
 
-.donate-main-btn:hover {
-    background-color: #e55338;
-    transform: translateY(-1px);
-}
+        .tab.active {
+            color: #1a5632;
+            border-bottom: 3px solid #1a5632;
+        }
 
-/* --- Styles Specific to the Authentication Page (Page 2) --- */
+        .form-group { margin-bottom: 25px; }
 
+        .form-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            color: #333;
+        }
 
-.form-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Align to the top of the viewport/container */
-    min-height: calc(100vh - 80px); /* Adjust based on header/footer height */
-    padding: 20px;
-    background-color: #f4f7f6;
-}
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            box-sizing: border-box;
+            font-size: 16px;
+        }
 
-.auth-box {
-    width: 100%;
-    max-width: 450px;
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
+        .submit-btn { 
+            width: 100%; 
+            background: #1a5632; 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
 
-.tab-buttons {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #ddd;
-}
+        .submit-btn:hover { background: #134226; }
 
-.tab-btn {
-    flex-grow: 1;
-    padding: 10px 0;
-    text-align: center;
-    cursor: pointer;
-    border: none;
-    background-color: transparent;
-    font-size: 1.1em;
-    color: #555;
-    transition: color 0.3s;
-    border-bottom: 3px solid transparent;
-}
-
-.tab-btn.active {
-    color: #1a5632;
-    border-bottom: 3px solid #1a5632;
-    font-weight: bold;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    color: #333;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Ensures padding doesn't affect overall width */
-    font-size: 1em;
-}
-
-.submit-btn {
-    width: 100%;
-    background-color: #1a5632;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.submit-btn:hover {
-    background-color: #2b7049;
-}
-
-.status-message {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 4px;
-    text-align: center;
-    font-weight: bold;
-}
-
-.status-message.success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* Initially hide forms */
-#signup-form, #login-form {
-    display: none;
-}
-</style>
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
 <header>
-    <div class="logo">Smart Donation & NGO System</div>
+    <div class="logo">Smart NGO System</div>
     <nav>
-        <a href="home.html">Causes</a>
-        <a href="dashboard.html">My Dashboard</a>
-        <a href="admin.html">Admin Panel</a>
-        <a href="reports.html">Reports</a>
-        <a href="login.html" class="active">Login / Register</a>
-        <a href="donate.html" class="donate-main-btn">Donate Now</a>
+        <a href="home.html" style="color: white; text-decoration: none;">View Causes</a>
     </nav>
 </header>
-<div class="form-container">
+
+<div class="container">
     <div class="auth-box">
         
-        <div class="tab-buttons">
-            <button id="login-tab" class="tab-btn active">Login</button>
-            <button id="signup-tab" class="tab-btn">Sign Up</button>
+        <div class="tabs">
+            <div id="login-tab" class="tab active" onclick="toggleAuth('login')">Login</div>
+            <div id="register-tab" class="tab" onclick="toggleAuth('register')">Register</div>
         </div>
 
-        <div id="login-form">
-            <h2>Log In</h2>
-            <form id="login-form-content">
-                <div class="form-group">
-                    <label for="login-email">Email:</label>
-                    <input type="email" id="login-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Password:</label>
-                    <input type="password" id="login-password" required>
-                </div>
-                <button type="submit" class="submit-btn">Login</button>
-                <div id="login-status" class="status-message" style="display:none;"></div>
-            </form>
-        </div>
+        <form id="login-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="login-email" placeholder="name@example.com" required>
+            </div>
 
-        <div id="signup-form">
-            <h2>Sign Up</h2>
-            <form id="signup-form-content">
-                <div class="form-group">
-                    <label for="signup-name">Full Name:</label>
-                    <input type="text" id="signup-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="signup-email">Email:</label>
-                    <input type="email" id="signup-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="signup-password">Password:</label>
-                    <input type="password" id="signup-password" required>
-                </div>
-                <div class="form-group">
-                    <label for="signup-role">I am Signing Up As:</label>
-                    <select id="signup-role" required>
-                        <option value="donor">Donor / Volunteer</option>
-                        <option value="ngo_staff">NGO Staff / Admin</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-btn">Register</button>
-                <div id="signup-status" class="status-message" style="display:none;"></div>
-            </form>
-        </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Sign In</button>
+        </form>
+
+        <form id="register-form" class="hidden">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="reg-name" placeholder="John Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="reg-email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>Create Password</label>
+                <input type="password" id="reg-password" placeholder="Min. 8 characters" required>
+            </div>
+
+            <div class="form-group">
+                <label>Account Type</label>
+                <select id="reg-role">
+                    <option value="donor">Donor / Volunteer</option>
+                    <option value="ngo_staff">NGO Staff (Admin)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn" style="background: #2b7049;">Create Account</button>
+        </form>
 
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const loginTab = document.getElementById('login-tab');
-    const signupTab = document.getElementById('signup-tab');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    
-    // API Forms and Status
-    const loginFormContent = document.getElementById('login-form-content');
-    const signupFormContent = document.getElementById('signup-form-content');
-    const loginStatus = document.getElementById('login-status');
-    const signupStatus = document.getElementById('signup-status');
+    // 1. Toggle between Login and Register views
+    function toggleAuth(type) {
+        const loginForm = document.getElementById('login-form');
+        const regForm = document.getElementById('register-form');
+        const loginTab = document.getElementById('login-tab');
+        const regTab = document.getElementById('register-tab');
 
-
-    // Initial state: show login form
-    function showLoginForm() {
-        loginTab.classList.add('active');
-        signupTab.classList.remove('active');
-        loginForm.style.display = 'block';
-        signupForm.style.display = 'none';
+        if (type === 'login') {
+            loginForm.classList.remove('hidden');
+            regForm.classList.add('hidden');
+            loginTab.classList.add('active');
+            regTab.classList.remove('active');
+        } else {
+            loginForm.classList.add('hidden');
+            regForm.classList.remove('hidden');
+            loginTab.classList.remove('active');
+            regTab.classList.add('active');
+        }
     }
 
-    function showSignupForm() {
-        loginTab.classList.remove('active');
-        signupTab.classList.add('active');
-        loginForm.style.display = 'none';
-        signupForm.style.display = 'block';
-    }
-
-    loginTab.addEventListener('click', showLoginForm);
-    signupTab.addEventListener('click', showSignupForm);
-
-    // Initialize
-    showLoginForm();
-
-    function displayStatus(element, message, isSuccess) {
-        element.textContent = message;
-        element.className = 'status-message ' + (isSuccess ? 'success' : 'error');
-        element.style.display = 'block';
-    }
-
-    // --- Login API Call ---
-    loginFormContent.addEventListener('submit', (e) => {
-        e.preventDefault(); // Prevent default browser submission
-
+    // 2. Handle Login Submission
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
 
-        displayStatus(loginStatus, 'Logging in...', false);
+        try {
+            const response = await fetch("http://localhost:3000/api/auth/login", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
+            const data = await response.json();
 
-        fetch("http://localhost:3000/api/auth/login", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-        })
-        .then(async res => {
-            const data = await res.json();
-            if (!res.ok) {
-                throw new Error(data.message || 'Login failed.');
-            }
-            return data;
-        })
-        .then(data => {
-            // Assume the API returns token and user role
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('userRole', data.role); // 'donor' or 'ngo_staff'
+            if (response.ok) {
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('userRole', data.role);
 
-            displayStatus(loginStatus, 'Login successful! Redirecting...', true);
-
-            // Redirect based on role
-            if (data.role === 'ngo_staff') {
-                setTimeout(() => window.location.href = 'admin.html', 1000);
+                if (data.role === 'ngo_staff') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             } else {
-                setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                alert(data.message || "Login failed. Please check your email and password.");
             }
-
-        })
-        .catch(error => {
-            console.error('Login Error:', error);
-            displayStatus(loginStatus, error.message || 'Login failed. Check your credentials.', false);
-        });
+        } catch (err) {
+            alert("Server connection failed. Is your backend running?");
+        }
     });
 
-    // --- Signup API Call ---
-    signupFormContent.addEventListener('submit', (e) => {
-        e.preventDefault(); // Prevent default browser submission
+    // 3. Handle Registration Submission
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+        const role = document.getElementById('reg-role').value;
 
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const role = document.getElementById('signup-role').value;
+        try {
+            const response = await fetch("http://localhost:3000/api/auth/signup", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role })
+            });
 
-        displayStatus(signupStatus, 'Registering account...', false);
-
-        fetch("http://localhost:3000/api/auth/signup", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password, role }),
-        })
-        .then(async res => {
-            const data = await res.json();
-            if (!res.ok) {
-                throw new Error(data.message || 'Registration failed.');
+            if (response.ok) {
+                alert("Account created successfully! You can now login.");
+                toggleAuth('login');
+            } else {
+                const data = await response.json();
+                alert(data.message || "Registration failed.");
             }
-            return data;
-        })
-        .then(data => {
-            displayStatus(signupStatus, 'Registration successful! Please log in.', true);
-            
-            // Optionally clear the form and switch back to login tab
-            signupFormContent.reset();
-            setTimeout(showLoginForm, 1500); // Switch after 1.5 seconds
-        })
-        .catch(error => {
-            console.error('Signup Error:', error);
-            displayStatus(signupStatus, error.message || 'Registration failed. Try a different email.', false);
-        });
+        } catch (err) {
+            alert("Error connecting to server.");
+        }
     });
-});
 </script>
+
 </body>
 </html>

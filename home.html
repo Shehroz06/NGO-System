@@ -1,159 +1,163 @@
-<style>
-    /* General Resets and Typography */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
-    color: #333;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Smart NGO System</title>
+    <style>
+        /* General Resets and Typography */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
 
-/* Header Styling */
-header {
-    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
-    color: white;
-    padding: 15px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        /* Header Styling */
+        header {
+            background-color: #1a5632;
+            color: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-.logo {
-    font-size: 1.5em;
-    font-weight: bold;
-}
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 25px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
 
-nav a:hover, nav a.active {
-    background-color: #2b7049;
-}
+        nav a:hover, nav a.active {
+            background-color: #2b7049;
+        }
 
-/* Donation Button Styling - ADDED FOR UNIFORMITY */
-.donate-main-btn {
-    background-color: #ff6347; /* Bright Tomato color */
-    color: white !important; /* Ensure visibility */
-    padding: 10px 20px !important;
-    border-radius: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-left: 20px; /* Separator from other links */
-    transition: background-color 0.3s, transform 0.1s;
-}
+        /* Call to Action Button */
+        .donate-main-btn {
+            background-color: #ff6347;
+            color: white !important;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
 
-.donate-main-btn:hover {
-    background-color: #e55338;
-    transform: translateY(-1px);
-}
+        .donate-main-btn:hover {
+            background-color: #e55338;
+        }
 
-/* Main Content Container */
-.container {
-    max-width: 1000px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
+        /* Main Content Container */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
 
-/* Cause Card Styling */
-.cause-card {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
+        h1 {
+            color: #1a5632;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
 
-.cause-title {
-    color: #1a5632;
-    margin-top: 0;
-}
+        /* Cause Card Styling */
+        .cause-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+        }
 
-.ngo-name {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 15px;
-}
+        .cause-title {
+            color: #1a5632;
+            margin-top: 0;
+            font-size: 24px;
+        }
 
-.description {
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
+        .ngo-name {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
 
-/* Progress Bar */
-.progress-bar-container {
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
+        .description {
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #555;
+        }
 
-.progress-bar {
-    height: 15px;
-    background-color: #4CAF50; /* Primary success color */
-    transition: width 0.4s ease;
-    text-align: right;
-}
+        /* Progress Bar */
+        .progress-bar-container {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            height: 18px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
 
-/* Stats and Donate Button */
-.stats {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95em;
-    margin-bottom: 15px;
-    color: #444;
-}
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.6s ease;
+        }
 
-.donate-btn {
-    display: inline-block;
-    background-color: #f4a261; /* Orange/Gold color for call to action */
-    color: white;
-    padding: 10px 15px;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
+        /* Stats and Donate Button */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
 
-.donate-btn:hover {
-    background-color: #e76f51;
-}
+        .donate-btn {
+            display: inline-block;
+            background-color: #f4a261;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
 
-/* Footer Styling */
-footer {
-    text-align: center;
-    padding: 20px 0;
-    margin-top: 50px;
-    border-top: 1px solid #eee;
-    color: #777;
-    background-color: #fff;
-}
-</style>
+        .donate-btn:hover {
+            background-color: #e76f51;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
 <header>
-    <div class="logo">Smart Donation & NGO System</div>
-    <nav>
+    <div class="logo">Smart NGO System</div>
+    <nav id="navbar">
         <a href="home.html" class="active">Causes</a>
-        <a href="dashboard.html">My Dashboard</a>
-        <a href="admin.html">Admin Panel</a>
-        <a href="reports.html">Reports</a>
-        <a href="login.html">Login / Register</a>
+        <a href="login.html" id="auth-link">Login / Register</a>
         <a href="donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
 </header>
-<div class="container">
-    <h1>Current Donation Causes</h1>
 
+<div class="container">
+    <h1>Support a Cause</h1>
     <div id="cause-container">
         </div>
 </div>
@@ -161,56 +165,71 @@ footer {
 <footer>
     <p>&copy; 2025 Smart Donation & NGO Management System</p>
 </footer>
+
 <script>
-    // ✅ Node.js API integration
+    document.addEventListener('DOMContentLoaded', () => {
+        const role = localStorage.getItem('userRole');
+        const token = localStorage.getItem('authToken');
+        const navbar = document.getElementById('navbar');
 
-fetch("http://localhost:3000/api/causes")
-  .then(res => res.json())
-  .then(causes => {
+        // 1. Dynamic Navigation Bar (RBAC)
+        if (token) {
+            let navHTML = `<a href="home.html" class="active">Causes</a>`;
+            navHTML += `<a href="dashboard.html">My Dashboard</a>`;
 
-    const container = document.getElementById("cause-container");
+            // If user is Staff, show Admin and Reports
+            if (role === 'ngo_staff') {
+                navHTML += `<a href="admin.html">Admin Panel</a>`;
+                navHTML += `<a href="reports.html">Reports</a>`;
+            }
 
-    causes.forEach(cause => {
+            navHTML += `<a href="login.html" onclick="localStorage.clear()">Logout</a>`;
+            navHTML += `<a href="donate.html" class="donate-main-btn">Donate Now</a>`;
+            navbar.innerHTML = navHTML;
+        }
 
-        const progress = Math.round(
-          (cause.collected / cause.goal) * 100
-        );
+        // 2. Fetch and Display Causes
+        fetch("http://localhost:3000/api/causes")
+            .then(res => {
+                if (!res.ok) throw new Error("Network response was not ok");
+                return res.json();
+            })
+            .then(causes => {
+                const container = document.getElementById("cause-container");
+                container.innerHTML = ""; // Clear loader
 
-        container.innerHTML += `
-          <div class="cause-card">
-              <h2 class="cause-title">${cause.title}</h2>
-              <p class="ngo-name">Managed by:
-                <b>${cause.ngo}</b>
-              </p>
-              <p class="description">${cause.description}</p>
+                causes.forEach(cause => {
+                    const progress = Math.round((cause.collected / cause.goal) * 100);
 
-              <div class="progress-bar-container">
-                  <div class="progress-bar"
-                       style="width: ${progress}%\">
-                  </div>
-              </div>
+                    container.innerHTML += `
+                        <div class="cause-card">
+                            <h2 class="cause-title">${cause.title}</h2>
+                            <p class="ngo-name">Managed by: <b>${cause.ngo}</b></p>
+                            <p class="description">${cause.description}</p>
 
-              <div class="stats">
-                  <p>Goal: <b>PKR ${cause.goal.toLocaleString()}</b></p>
-                  <p>Collected:
-                    <b>PKR ${cause.collected.toLocaleString()}
-                    (${progress}%)</b>
-                  </p>
-              </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${progress}%"></div>
+                            </div>
 
-              <a href="donate.html?cause_id=${cause.id}"
-                 class="donate-btn">
-                 Donate Now
-              </a>
-          </div>
-        `;
+                            <div class="stats">
+                                <span>Goal: PKR ${cause.goal.toLocaleString()}</span>
+                                <span>Raised: PKR ${cause.collected.toLocaleString()} (${progress}%)</span>
+                            </div>
+
+                            <a href="donate.html?cause_id=${cause.id}" class="donate-btn">
+                                Contribute Now
+                            </a>
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                console.error("Error fetching causes:", err);
+                document.getElementById("cause-container").innerHTML = 
+                    `<p style="color: red; text-align: center;">Unable to load causes. Please ensure the backend server is running.</p>`;
+            });
     });
-  })
-  .catch(err => {
-    console.error("Error fetching causes:", err);
-    const container = document.getElementById("cause-container");
-    container.innerHTML = `<p style="color: red;">Failed to load donation causes. Check server connection.</p>`;
-  });
 </script>
+
 </body>
 </html>

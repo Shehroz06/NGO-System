@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Donation</title>
+    <link rel="stylesheet" href="style.css"> <style>
+        .donation-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .amount-options {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .amount-btn {
+            padding: 10px 20px;
+            border: 1px solid #007bff;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .amount-btn.active {
+            background: #007bff;
+            color: white;
+        }
+        .form-group { margin-bottom: 15px; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; }
+        button.submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="donation-container">
+        <h2>Support Our Cause</h2>
+        <p>Choose an amount to donate:</p>
+        
+        <div class="amount-options">
+            <button class="amount-btn">1000 PKR</button>
+            <button class="amount-btn">2500 PKR</button>
+            <button class="amount-btn">50 PKR</button>
+            <button class="amount-btn">Other</button>
+        </div>
+
+        <form action="/process-donation" method="POST">
+            <div class="form-group">
+                <label>Custom Amount (PKR)</label>
+                <input type="number" name="amount" placeholder="Enter amount">
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select name="payment_method">
+                    <option value="credit_card">Credit Card</option>
+                    <option value="paypal">PayPal</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn">Donate Now</button>
+        </form>
+    </div>
+</body>
+</html>
