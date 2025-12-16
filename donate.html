@@ -3,79 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make a Donation</title>
-    <link rel="stylesheet" href="style.css"> <style>
+    <title>Make a Donation - Smart NGO System</title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        /* Maintaining your original styling */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+        }
         .donation-container {
             max-width: 600px;
             margin: 50px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .amount-options {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        .amount-btn {
-            padding: 10px 20px;
-            border: 1px solid #007bff;
+            padding: 30px;
             background: white;
-            cursor: pointer;
-            border-radius: 5px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
-        .amount-btn.active {
-            background: #007bff;
-            color: white;
+        h2 { color: #1a5632; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
+        
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            box-sizing: border-box;
+            font-size: 15px;
         }
-        .form-group { margin-bottom: 15px; }
-        input, select { width: 100%; padding: 8px; margin-top: 5px; }
+
+        /* Styling for the help text below the free text field */
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
         button.submit-btn {
             width: 100%;
-            padding: 12px;
-            background-color: #28a745;
+            padding: 15px;
+            background-color: #1a5632;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
         }
+        button.submit-btn:hover { background-color: #2b7049; }
     </style>
 </head>
 <body>
     <div class="donation-container">
         <h2>Support Our Cause</h2>
-        <p>Choose an amount to donate:</p>
-        
-        <div class="amount-options">
-            <button class="amount-btn">1000 PKR</button>
-            <button class="amount-btn">2500 PKR</button>
-            <button class="amount-btn">50 PKR</button>
-            <button class="amount-btn">Other</button>
-        </div>
+        <p>Your contribution makes a real difference.</p>
 
-        <form action="/process-donation" method="POST">
+        <form action="/process-donation" method="POST" id="donation-form">
+            
             <div class="form-group">
-                <label>Custom Amount (PKR)</label>
-                <input type="number" name="amount" placeholder="Enter amount">
+                <label for="donation-cause">Purpose of Donation / Cause Name</label>
+                <input type="text" id="donation-cause" name="cause_name" 
+                       placeholder="e.g., Flood Relief, Education Fund, General Charity" required>
+                <p class="help-text">Mention a specific project or leave as 'General' if unsure.</p>
             </div>
+
+            <div class="form-group">
+                <label>Amount (PKR)</label>
+                <input type="number" name="amount" placeholder="Enter amount" required min="1">
+            </div>
+
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" name="name" required>
+                <input type="text" name="name" placeholder="Enter your full name" required>
             </div>
+
             <div class="form-group">
                 <label>Email Address</label>
-                <input type="email" name="email" required>
+                <input type="email" name="email" placeholder="Enter your email" required>
             </div>
-            <div class="form-group">
-                <label>Payment Method</label>
-                <select name="payment_method">
-                    <option value="credit_card">Credit Card</option>
-                    <option value="paypal">PayPal</option>
-                </select>
-            </div>
+            
             <button type="submit" class="submit-btn">Donate Now</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const causeInput = document.getElementById('donation-cause');
+
+            // Logic to catch pre-defined causes from the Home page
+            // If someone clicks "Contribute Now" on "Education", this fills the box automatically
+            const urlParams = new URLSearchParams(window.location.search);
+            const prefilledCause = urlParams.get('cause_title'); // Passing title instead of ID now
+            
+            if (prefilledCause) {
+                causeInput.value = decodeURIComponent(prefilledCause);
+            }
+        });
+    </script>
 </body>
 </html>

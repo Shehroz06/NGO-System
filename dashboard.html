@@ -37,10 +37,7 @@ body {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .logo {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
+        .logo { font-size: 1.5em; font-weight: bold; }
 
         nav a {
             color: white;
@@ -52,9 +49,7 @@ body {
             font-size: 14px;
         }
 
-        nav a:hover, nav a.active {
-            background-color: #2b7049;
-        }
+        nav a:hover, nav a.active { background-color: #2b7049; }
 
         .donate-main-btn {
             background-color: #ff6347;
@@ -62,7 +57,7 @@ body {
             font-weight: bold;
         }
 
-        /* Layout: Sidebar on Left, Content on Right */
+        /* Layout */
         .dashboard-layout {
             display: flex;
             min-height: calc(100vh - 80px);
@@ -80,16 +75,12 @@ body {
             color: #1a5632;
             font-size: 1.1em;
             text-transform: uppercase;
-            letter-spacing: 1px;
             border-bottom: 2px solid #f4f7f6;
             padding-bottom: 15px;
             margin-bottom: 20px;
         }
 
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-        }
+        .sidebar-menu { list-style: none; padding: 0; }
 
         .sidebar-menu li a {
             display: block;
@@ -100,24 +91,15 @@ body {
             border-radius: 8px;
             transition: all 0.3s;
             font-weight: 500;
+            cursor: pointer;
         }
 
-        .sidebar-menu li a:hover {
-            background-color: #e0f2e0;
-            color: #1a5632;
-        }
+        .sidebar-menu li a:hover { background-color: #e0f2e0; color: #1a5632; }
 
-        .sidebar-menu li a.active-menu {
-            background-color: #1a5632;
-            color: white;
-        }
+        .sidebar-menu li a.active-menu { background-color: #1a5632; color: white; }
 
-        .dashboard-content {
-            flex-grow: 1;
-            padding: 40px 60px;
-        }
+        .dashboard-content { flex-grow: 1; padding: 40px 60px; }
 
-        /* Dashboard Section Cards */
         .dashboard-section {
             background-color: white;
             padding: 30px;
@@ -130,67 +112,25 @@ body {
             color: #1a5632;
             margin-top: 0;
             margin-bottom: 25px;
-            font-size: 1.4em;
             border-left: 5px solid #1a5632;
             padding-left: 15px;
         }
 
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            color: #666;
-            text-align: left;
-            padding: 15px;
-            border-bottom: 2px solid #eee;
-        }
-
-        td {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-
-        .receipt-link {
-            color: #ff6347;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        /* Forms */
+        /* Tables & Forms */
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; }
         .form-group { margin-bottom: 20px; }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #444;
-        }
-
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
         .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 15px;
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;
         }
-
         .submit-btn {
-            background-color: #1a5632;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: opacity 0.3s;
+            background-color: #1a5632; color: white; padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 
         .submit-btn:hover { opacity: 0.9; }
 
@@ -227,9 +167,75 @@ body {
 }
 </style>
 =======
+=======
+>>>>>>> 1562ac7 (fixes)
         .hidden { display: none; }
     </style>
 >>>>>>> 8a68def (Changes made)
+=======
+        .submit-btn:hover {
+            background-color: #154528;
+        }
+
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const role = localStorage.getItem('role');
+            const token = localStorage.getItem('token');
+            const navAdmin = document.getElementById('nav-admin');
+            const navReports = document.getElementById('nav-reports');
+            const navDashboard = document.getElementById('nav-dashboard');
+            const navAuth = document.getElementById('nav-auth');
+            
+            // Redirect if not logged in
+            if (!token) {
+                window.location.href = 'login.html';
+                return; 
+            }
+
+            // General Authentication Check & Logout Handler
+            if (token) {
+                if (navAuth) {
+                    navAuth.textContent = 'Logout';
+                    navAuth.href = '#'; 
+                    navAuth.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('role');
+                        window.location.href = 'home.html';
+                    });
+                }
+            } else {
+                 if (navAuth) {
+                    navAuth.textContent = 'Login';
+                    navAuth.href = 'login.html';
+                }
+            }
+            
+            // 1. Admin Panel and Reports hidden from user (User = 'user' role or not logged in)
+            // 2. Dashboard hidden from admin (Admin = 'admin' role)
+            if (role === 'admin') {
+                // Admin shouldn't be here, but if they are, hide user stuff
+                window.location.href = 'admin.html'; // Redirect admin away from dashboard
+                if (navAdmin) navAdmin.style.display = 'inline-block';
+                if (navReports) navReports.style.display = 'inline-block';
+                if (navDashboard) navDashboard.style.display = 'none'; 
+            } else if (role === 'user') { 
+                if (navDashboard) navDashboard.style.display = 'inline-block';
+                if (navAdmin) navAdmin.style.display = 'none';
+                if (navReports) navReports.style.display = 'none';
+            } else { // Not logged in
+                if (navDashboard) navDashboard.style.display = 'none';
+                if (navAdmin) navAdmin.style.display = 'none';
+                if (navReports) navReports.style.display = 'none';
+            }
+        });
+    </script>
+>>>>>>> c3bf509 (fix)
+=======
+        .hidden { display: none; }
+    </style>
+>>>>>>> c8c3b73 (1)
 </head>
 <body>
 
@@ -245,12 +251,15 @@ body {
 
 <div class="dashboard-layout">
     <aside class="sidebar">
-        <h2>User Account</h2>
+        <h2 id="acc-type-label">User Account</h2>
         <ul class="sidebar-menu">
-            <li><a href="#" class="active-menu" data-target="history">Donation History</a></li>
-            <li><a href="#" data-target="volunteer">Volunteer Sign-up</a></li>
-            <li><a href="#" data-target="feedback">Feedback & Complaints</a></li>
-            <li><a href="login.html" onclick="localStorage.clear()">Logout</a></li>
+            <li><a class="active-menu" data-target="history">Donation History</a></li>
+            <li><a data-target="volunteer">Volunteer Sign-up</a></li>
+            <li><a data-target="feedback">Feedback & Complaints</a></li>
+            <li><a data-target="update-profile">Update Profile</a></li>
+            <li id="admin-back-item" class="hidden">
+                <a href="admin.html" style="background-color: #e67e22; color: white; margin-top: 20px;">Return to Admin Panel</a>
+            </li>
         </ul>
     </aside>
 
@@ -275,10 +284,31 @@ body {
             </table>
         </section>
 
+        <section id="update-profile" class="dashboard-section hidden">
+            <h3>Update Your Profile</h3>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="prof-name" required>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="prof-pass" placeholder="Enter new password (optional)">
+                </div>
+                <button type="submit" class="submit-btn">Save Changes</button>
+                <p id="profile-status" style="margin-top:15px;"></p>
+            </form>
+        </section>
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c8c3b73 (1)
         <section id="volunteer" class="dashboard-section hidden">
             <h3>Become a Volunteer</h3>
             <form id="volunteer-form">
                 <div class="form-group">
+<<<<<<< HEAD
 <<<<<<< HEAD
                     <label for="volunteer-name">Full Name:</label>
                     <input type="text" id="volunteer-name" required>
@@ -350,30 +380,34 @@ body {
                 <button type="submit" class="submit-btn">Submit Application</button>
                 <p id="volunteer-status" style="margin-top: 15px; color: green;"></p>
 =======
+=======
+>>>>>>> c8c3b73 (1)
                     <label>Full Name</label>
                     <input type="text" id="vol-name" required>
                 </div>
                 <div class="form-group">
                     <label>Skills (e.g., Marketing, IT)</label>
-                    <input type="text" id="vol-skill" placeholder="List skills separated by commas" required>
+                    <input type="text" id="vol-skill" required>
                 </div>
                 <div class="form-group">
                     <label>Preferred NGO</label>
-                    <select id="vol-ngo" required>
-                        <option value="">Select an Organization</option>
-                    </select>
+                    <select id="vol-ngo" required><option value="">Select NGO</option></select>
                 </div>
                 <div class="form-group">
                     <label>Availability</label>
                     <select id="vol-avail" required>
                         <option value="Weekend">Weekends Only</option>
                         <option value="Weekday">Weekdays</option>
-                        <option value="FullTime">Full Time</option>
                     </select>
                 </div>
                 <button type="submit" class="submit-btn">Submit Application</button>
+<<<<<<< HEAD
+<<<<<<< HEAD
                 <p id="vol-status" style="margin-top:15px;"></p>
 >>>>>>> 8a68def (Changes made)
+=======
+                <p id="vol-status"></p>
+>>>>>>> 1562ac7 (fixes)
             </form>
         </section>
 
@@ -417,15 +451,22 @@ body {
                     <label for="feedback-type">Type:</label>
                     <select id="feedback-type" required>
 =======
+=======
+                <p id="vol-status"></p>
+            </form>
+        </section>
+
+        <section id="feedback" class="dashboard-section hidden">
+>>>>>>> c8c3b73 (1)
             <h3>Submit Feedback</h3>
             <form id="feedback-form">
                 <div class="form-group">
                     <label>Target NGO</label>
-                    <select id="feed-ngo" required>
-                        <option value="">Select an Organization</option>
-                    </select>
+                    <select id="feed-ngo" required><option value="">Select NGO</option></select>
                 </div>
                 <div class="form-group">
+<<<<<<< HEAD
+<<<<<<< HEAD
                     <label>Type</label>
                     <select id="feed-type" required>
 >>>>>>> 8a68def (Changes made)
@@ -448,35 +489,45 @@ body {
                 <button type="submit" class="submit-btn">Send Feedback</button>
                 <p id="feed-status" style="margin-top:15px;"></p>
 >>>>>>> 8a68def (Changes made)
+=======
+=======
+>>>>>>> c8c3b73 (1)
+                    <label>Message</label>
+                    <textarea id="feed-msg" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Send Feedback</button>
+                <p id="feed-status"></p>
+<<<<<<< HEAD
+>>>>>>> 1562ac7 (fixes)
+=======
+>>>>>>> c8c3b73 (1)
             </form>
         </section>
     </main>
 </div>
+<<<<<<< HEAD
+=======
+        </div>
+    </div>
+>>>>>>> c3bf509 (fix)
+=======
+>>>>>>> c8c3b73 (1)
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem("authToken");
     const role = localStorage.getItem("userRole");
+    const userName = localStorage.getItem("userName");
 
-    // 1. Session & RBAC Check
-    if (!token) {
-        window.location.href = "login.html";
-        return;
-    }
+    if (!token) { window.location.href = "login.html"; return; }
 
-    // Update Top Nav for Staff
-    if (role === 'ngo_staff') {
-        const topNav = document.getElementById('top-nav');
-        const logoutLink = topNav.querySelector('a[onclick*="localStorage.clear()"]');
-        const adminLink = document.createElement('a');
-        adminLink.href = 'admin.html';
-        adminLink.textContent = 'Admin Panel';
-        const reportsLink = document.createElement('a');
-        reportsLink.href = 'reports.html';
-        reportsLink.textContent = 'Reports';
-        
-        topNav.insertBefore(adminLink, logoutLink);
-        topNav.insertBefore(reportsLink, logoutLink);
+    // UPDATED: Strict redirect for Admins/Staff
+    if (role === 'ngo_staff' || role === 'admin') {
+        // Instead of showing "Admin Mode", we kick them out to the admin panel
+        window.location.href = "admin.html";
+        return; // Stop further execution of this script
+    } else {
+        document.getElementById('welcome-msg').textContent = `Welcome back, ${userName}!`;
     }
 
     const authHeaders = {
@@ -484,72 +535,20 @@ document.addEventListener('DOMContentLoaded', () => {
         "Authorization": `Bearer ${token}`
     };
 
-    // 2. Sidebar Navigation
-    const menuLinks = document.querySelectorAll(".sidebar-menu li a");
+    // Tab Switching
+    const menuLinks = document.querySelectorAll(".sidebar-menu li a[data-target]");
     const sections = document.querySelectorAll(".dashboard-section");
 
     menuLinks.forEach(link => {
         link.addEventListener("click", (e) => {
             const target = link.getAttribute("data-target");
-            if (!target) return;
-            e.preventDefault();
-
             sections.forEach(s => s.classList.add("hidden"));
             document.getElementById(target).classList.remove("hidden");
-
             menuLinks.forEach(l => l.classList.remove("active-menu"));
             link.classList.add("active-menu");
         });
-    });
-
-    // 3. Fetch Data: Donation History
-    fetch("http://localhost:3000/api/donations/history", { headers: authHeaders })
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById("donation-history-body");
-            tbody.innerHTML = data.length ? "" : "<tr><td colspan='5'>No donations found.</td></tr>";
-            
-            data.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${new Date(item.date).toLocaleDateString()}</td>
-                        <td><strong>${item.causeTitle}</strong></td>
-                        <td>PKR ${item.amount.toLocaleString()}</td>
-                        <td>${item.method}</td>
-                        <td><a href="http://localhost:3000/receipts/${item.id}" class="receipt-link" target="_blank">View PDF</a></td>
-                    </tr>
-                `;
-            });
-        });
-
-    // 4. Fetch NGOs for Forms
-    fetch("http://localhost:3000/api/ngos")
-        .then(res => res.json())
-        .then(ngos => {
-            const volSelect = document.getElementById("vol-ngo");
-            const feedSelect = document.getElementById("feed-ngo");
-            ngos.forEach(ngo => {
-                const opt = `<option value="${ngo.id}">${ngo.name}</option>`;
-                volSelect.innerHTML += opt;
-                feedSelect.innerHTML += opt;
-            });
-        });
-
-    // 5. Submit Volunteer Form
-    document.getElementById('volunteer-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const body = {
-            name: document.getElementById('vol-name').value,
-            skill: document.getElementById('vol-skill').value,
-            ngoId: document.getElementById('vol-ngo').value,
-            availability: document.getElementById('vol-avail').value
-        };
-
-        const res = await fetch('http://localhost:3000/api/volunteer', {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify(body)
-        });
+<<<<<<< HEAD
+<<<<<<< HEAD
 
         const status = document.getElementById('vol-status');
         if (res.ok) {
@@ -631,7 +630,11 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error(err);
       statusEl.textContent = 'Submission failed. Please try again.';
       statusEl.style.color = 'red';
+=======
+        document.getElementById('vol-status').textContent = res.ok ? "Application sent!" : "Failed to send.";
+>>>>>>> 1562ac7 (fixes)
     });
+<<<<<<< HEAD
   });
 
   // --- 5. Handle Feedback Form Submission ---
@@ -672,6 +675,69 @@ document.addEventListener('DOMContentLoaded', () => {
 =======
     });
 >>>>>>> 8a68def (Changes made)
+});
+=======
+    });
+>>>>>>> c3bf509 (fix)
+</script>
+=======
+>>>>>>> c8c3b73 (1)
+
+    // Profile Update Handling
+    document.getElementById('prof-name').value = userName;
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('prof-name').value;
+        localStorage.setItem("userName", newName);
+        document.getElementById('profile-status').textContent = "Profile updated successfully!";
+        document.getElementById('profile-status').style.color = "green";
+        setTimeout(() => location.reload(), 1000);
+    });
+
+    // Fetch Donation History
+    fetch("http://localhost:3000/api/donations/history", { headers: authHeaders })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("donation-history-body");
+            tbody.innerHTML = data.length ? "" : "<tr><td colspan='5'>No donations found.</td></tr>";
+            data.forEach(item => {
+                tbody.innerHTML += `<tr>
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td><strong>${item.causeTitle}</strong></td>
+                    <td>PKR ${item.amount.toLocaleString()}</td>
+                    <td>${item.method}</td>
+                    <td><a href="#" class="receipt-link">View PDF</a></td>
+                </tr>`;
+            });
+        });
+
+    // Fetch NGOs
+    fetch("http://localhost:3000/api/ngos")
+        .then(res => res.json())
+        .then(ngos => {
+            const vSel = document.getElementById("vol-ngo");
+            const fSel = document.getElementById("feed-ngo");
+            ngos.forEach(ngo => {
+                const opt = `<option value="${ngo.id}">${ngo.name}</option>`;
+                vSel.innerHTML += opt; fSel.innerHTML += opt;
+            });
+        });
+
+    // Submit Volunteer Form
+    document.getElementById('volunteer-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('http://localhost:3000/api/volunteer', {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({
+                name: document.getElementById('vol-name').value,
+                skill: document.getElementById('vol-skill').value,
+                ngoId: document.getElementById('vol-ngo').value,
+                availability: document.getElementById('vol-avail').value
+            })
+        });
+        document.getElementById('vol-status').textContent = res.ok ? "Application sent!" : "Failed to send.";
+    });
 });
 </script>
 </body>

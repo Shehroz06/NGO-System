@@ -10,7 +10,6 @@
             margin: 0; 
             padding: 0; 
         }
-
         header { 
             background-color: #1a5632; 
             color: white; 
@@ -19,13 +18,11 @@
             justify-content: space-between; 
             align-items: center;
         }
-
         .container { 
             display: flex; 
             justify-content: center; 
             padding: 50px 20px; 
         }
-
         .auth-box { 
             background: white; 
             padding: 40px; 
@@ -34,14 +31,11 @@
             max-width: 450px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
         }
-
-        /* Tabs for switching between Login and Register */
         .tabs {
             display: flex;
             margin-bottom: 30px;
             border-bottom: 2px solid #eee;
         }
-
         .tab {
             flex: 1;
             text-align: center;
@@ -50,21 +44,17 @@
             color: #666;
             font-weight: bold;
         }
-
         .tab.active {
             color: #1a5632;
             border-bottom: 3px solid #1a5632;
         }
-
         .form-group { margin-bottom: 25px; }
-
         .form-group label { 
             display: block; 
             font-weight: 600; 
             margin-bottom: 8px; 
             color: #333;
         }
-
         .form-group input, .form-group select { 
             width: 100%; 
             padding: 12px; 
@@ -73,7 +63,6 @@
             box-sizing: border-box;
             font-size: 16px;
         }
-
         .submit-btn { 
             width: 100%; 
             background: #1a5632; 
@@ -86,9 +75,7 @@
             font-weight: bold;
             transition: background 0.3s ease;
         }
-
         .submit-btn:hover { background: #134226; }
-
         .hidden { display: none; }
     </style>
 </head>
@@ -103,7 +90,6 @@
 
 <div class="container">
     <div class="auth-box">
-        
         <div class="tabs">
             <div id="login-tab" class="tab active" onclick="toggleAuth('login')">Login</div>
             <div id="register-tab" class="tab" onclick="toggleAuth('register')">Register</div>
@@ -143,7 +129,7 @@
                 <label>Account Type</label>
                 <select id="reg-role">
                     <option value="donor">Donor / Volunteer</option>
-                    <option value="ngo_staff">NGO Staff (Admin)</option>
+                    <option value="admin">NGO Staff (Admin)</option>
                 </select>
             </div>
 
@@ -154,7 +140,6 @@
 </div>
 
 <script>
-    // 1. Toggle between Login and Register views
     function toggleAuth(type) {
         const loginForm = document.getElementById('login-form');
         const regForm = document.getElementById('register-form');
@@ -174,7 +159,6 @@
         }
     }
 
-    // 2. Handle Login Submission
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
@@ -193,7 +177,7 @@
                 localStorage.setItem('authToken', data.token);
                 localStorage.setItem('userRole', data.role);
 
-                if (data.role === 'ngo_staff') {
+                if (data.role === 'admin') {
                     window.location.href = 'admin.html';
                 } else {
                     window.location.href = 'dashboard.html';
@@ -206,7 +190,6 @@
         }
     });
 
-    // 3. Handle Registration Submission
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('reg-name').value;
