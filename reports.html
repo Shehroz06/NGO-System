@@ -12,6 +12,7 @@ body {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports & Logs - Smart NGO System</title>
@@ -25,39 +26,55 @@ body {
             color: #333;
         }
 >>>>>>> 8a68def (Changes made)
+=======
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports & Logs - NGO Management System</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
+    header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+    .logo { font-size: 1.5em; font-weight: bold; }
+    nav a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s; font-size: 14px; }
+    nav a:hover { background-color: #154528; }
+    
+    h1 { color: #1a5632; margin-bottom: 20px; }
+    .report-section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
+    .report-section h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: #1a5632; margin-top: 0; }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .data-table th, .data-table td { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; }
+    .data-table th { background-color: #f8f8f8; color: #333; }
+    .report-chart { height: 300px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-top: 15px; border-radius: 5px; color: #666; }
+    .log-table-container { max-height: 400px; overflow-y: auto; }
+  </style>
+>>>>>>> 2c27cb2 (updated till presentation)
 
-        header {
-            background-color: #1a5632;
-            color: white;
-            padding: 15px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const role = localStorage.getItem("userRole");
+    const token = localStorage.getItem("authToken");
 
-        .logo { font-size: 1.5em; font-weight: bold; }
+    if (!token || role !== "admin") {
+      alert("Access Denied. Admins only.");
+      window.location.href = "login.html";
+      return;
+    }
 
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-            font-size: 14px;
-        }
+    const navAuth = document.getElementById("nav-auth");
+    if (navAuth) {
+      navAuth.textContent = "Logout";
+      navAuth.href = "#";
+      navAuth.addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = "home.html";
+      });
+    }
 
-        nav a:hover {
-            background-color: #154528;
-        }
-        
-        .reports-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
+    loadPublicStats();
+    loadAuditLogsFromDB(token);
+  });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         .dashboard-layout {
             display: flex;
@@ -164,22 +181,20 @@ footer {
             color: #1a5632;
             margin-bottom: 20px;
         }
+=======
+  async function loadPublicStats() {
+    try {
+      const res = await fetch("http://localhost:3000/api/public-stats");
+      if (!res.ok) throw new Error("Failed to fetch public stats");
+      const stats = await res.json();
+>>>>>>> 2c27cb2 (updated till presentation)
 
-        .report-section {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
-        
-        .report-section h2 {
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            color: #1a5632;
-            margin-top: 0;
-        }
+      const total = Number(stats.totalDonations || 0);
+      const td1 = document.getElementById("totalDonations");
+      const td2 = document.getElementById("activeCauses");
+      const td3 = document.getElementById("registeredUsers");
 
+<<<<<<< HEAD
         /* Table styles */
         .data-table {
             width: 100%;
@@ -268,54 +283,49 @@ footer {
             const navReports = document.getElementById('nav-reports');
             const navDashboard = document.getElementById('nav-dashboard');
             const navAuth = document.getElementById('nav-auth');
+=======
+      if (td1) td1.textContent = "PKR " + total.toLocaleString();
+      if (td2) td2.textContent = Number(stats.activeCauses || 0);
+      if (td3) td3.textContent = Number(stats.registeredUsers || 0);
+    } catch (err) {
+      console.error("Failed to load stats:", err);
+    }
+  }
+>>>>>>> 2c27cb2 (updated till presentation)
 
-            // General Authentication Check & Logout Handler
-            if (token) {
-                if (navAuth) {
-                    navAuth.textContent = 'Logout';
-                    navAuth.href = '#'; 
-                    navAuth.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('role');
-                        window.location.href = 'home.html';
-                    });
-                }
-            } else {
-                 if (navAuth) {
-                    navAuth.textContent = 'Login';
-                    navAuth.href = 'login.html';
-                }
-            }
+  async function loadAuditLogsFromDB(token) {
+    try {
+      const res = await fetch("http://localhost:3000/api/audit", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch audit logs");
+      const logs = await res.json();
 
-            // Since we're on the reports page, ensure admin links are visible and dashboard is hidden
-            if (navAdmin) navAdmin.style.display = 'inline-block';
-            if (navReports) navReports.style.display = 'inline-block';
-            if (navDashboard) navDashboard.style.display = 'none'; 
-            
-            // Call Admin Log Load function (Functionality 3)
-            loadAuditLogs();
-        });
-        
-        // Admin Audit Log Functions (Functionality 3: Admin logs should be part of reports page)
-        function loadAuditLogs() {
-            const logs = JSON.parse(localStorage.getItem('adminLogs') || '[]');
-            const logBody = document.getElementById('log-body');
-            if (!logBody) return; 
-            
-            // Reverse the array to show most recent logs first
-            const displayLogs = logs.slice().reverse(); 
-            
-            logBody.innerHTML = displayLogs.length ? "" : "<tr><td colspan='2'>No recent admin actions.</td></tr>";
-            
-            displayLogs.forEach(log => {
-                logBody.innerHTML += `<tr><td>${log.timestamp}</td><td>${log.action}</td></tr>`;
-            });
-        }
-    </script>
+      const logBody = document.getElementById("log-body");
+      if (!logBody) return;
+
+      if (!logs.length) {
+        logBody.innerHTML = "<tr><td colspan='2'>No recent admin actions.</td></tr>";
+        return;
+      }
+
+      logBody.innerHTML = "";
+      logs.forEach((log) => {
+        const ts = log.timestamp ? new Date(log.timestamp).toLocaleString() : "-";
+        logBody.innerHTML += `<tr><td>${ts}</td><td>${log.actionDetails || "-"}</td></tr>`;
+      });
+    } catch (err) {
+      console.error("Failed to load audit logs:", err);
+      const logBody = document.getElementById("log-body");
+      if (logBody) logBody.innerHTML = "<tr><td colspan='2'>Failed to load logs.</td></tr>";
+    }
+  }
+</script>
+
 </head>
 <body>
 
+<<<<<<< HEAD
     <header>
         <div class="logo">Smart NGO System</div>
         <nav>
@@ -328,22 +338,31 @@ footer {
         </nav>
     </header>
 >>>>>>> c3bf509 (fix)
+=======
+<header>
+  <div class="logo">NGO Management System</div>
+  <nav>
+    <a href="home.html">Home</a>
+    <a href="admin.html">Admin Panel</a>
+    <a href="reports.html">Reports/Logs</a>
+    <a href="login.html" id="nav-auth">Login</a>
+  </nav>
+</header>
+>>>>>>> 2c27cb2 (updated till presentation)
 
-    <div class="reports-container">
-        <h1>System Reports & Logs</h1>
+<div class="reports-container">
+  <h1> System Reports & Logs</h1>
 
-        <section id="key-metrics" class="report-section">
-            <h2>Key System Metrics</h2>
-            <div class="report-chart">
-                [Placeholder for Donation Trends Chart (e.g., using Chart.js)]
-            </div>
-            <table class="data-table" style="width: 50%; margin-top: 25px;">
-                <tr><th>Total Donations</th><td>PKR 15,000,000</td></tr>
-                <tr><th>Active Causes</th><td>12</td></tr>
-                <tr><th>Registered Users</th><td>5,500</td></tr>
-            </table>
-        </section>
+  <section id="key-metrics" class="report-section">
+    <h2>Key System Metrics</h2>
+    
+<table class="data-table" style="width: 50%; margin-top: 25px;">
+  <tr><th>Total Donations</th><td id="totalDonations">PKR 0</td></tr>
+  <tr><th>Active Causes</th><td id="activeCauses">0</td></tr>
+  <tr><th>Registered Users</th><td id="registeredUsers">0</td></tr>
+</table>
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         <section id="volunteer" class="dashboard-section hidden">
             <h3>Become a Volunteer</h3>
@@ -610,17 +629,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             <h2>Volunteer Applications</h2>
             <p>Table of recent volunteer sign-ups for admin review.</p>
         </section>
+=======
+  </section>
+>>>>>>> 2c27cb2 (updated till presentation)
 
+  <section id="audit-logs" class="report-section" style="margin-top: 50px;">
+    <h2>Admin Audit Logs</h2>
+    <div class="log-table-container">
+      <table class="data-table">
+        <thead>
+          <tr><th>Timestamp</th><th>Action</th></tr>
+        </thead>
+        <tbody id="log-body">
+          <tr><td colspan="2">Loading admin logs...</td></tr>
+        </tbody>
+      </table>
     </div>
+  </section>
 
-    <script>
-        // Existing script for reports data loading
-        const token = localStorage.getItem('token');
-        const authHeaders = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
+  <section id="volunteer-reports" class="report-section">
+    <h2>Volunteer Applications</h2>
+    <p>Will integrate later.</p>
+  </section>
+</div>
 
+<<<<<<< HEAD
         // Example: Function to load Admin Reports (e.g., volunteer applications, user stats)
         async function loadAdminReports() {
             try {
@@ -673,5 +706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // loadAdminReports(); // Uncomment to activate on page load
     </script>
 >>>>>>> c3bf509 (fix)
+=======
+>>>>>>> 2c27cb2 (updated till presentation)
 </body>
 </html>

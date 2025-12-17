@@ -3,12 +3,14 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const pool = require("./db");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // for form bodies if needed
+app.use(express.urlencoded({ extended: true }));
 
 // -------- JWT middleware --------
 function requireAuth(req, res, next) {
@@ -34,10 +36,12 @@ function requireRole(...roles) {
 }
 
 // -------- AUTH --------
-
-// Signup (stores in MySQL)
 app.post("/api/auth/signup", async (req, res) => {
   const { name, email, password, role } = req.body;
+
+  const allowedRoles = ["donor", "admin", "volunteer"];
+  const safeRole = allowedRoles.includes(role) ? role : "donor";
+
   try {
     const [exists] = await pool.query("SELECT user_id FROM Users WHERE email = ?", [email]);
     if (exists.length) return res.status(409).json({ message: "Email already registered." });
@@ -45,7 +49,7 @@ app.post("/api/auth/signup", async (req, res) => {
     const hashed = await bcrypt.hash(password, 10);
     await pool.query(
       "INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, ?)",
-      [name, email, hashed, role]
+      [name, email, hashed, safeRole]
     );
 
     res.status(201).json({ message: "Account created successfully." });
@@ -54,12 +58,11 @@ app.post("/api/auth/signup", async (req, res) => {
   }
 });
 
-// Login (checks MySQL + returns JWT)
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     const [rows] = await pool.query(
-      "SELECT user_id, password, role FROM Users WHERE email = ?",
+      "SELECT user_id, name, password, role FROM Users WHERE email = ?",
       [email]
     );
     if (!rows.length) return res.status(401).json({ message: "Invalid credentials" });
@@ -74,15 +77,13 @@ app.post("/api/auth/login", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    res.json({ message: "Login successful", token, role: user.role });
+    res.json({ message: "Login successful", token, role: user.role, name: user.name });
   } catch (e) {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
 
-// -------- HOME + ADMIN --------
-
-// Public list for home/admin
+// -------- PUBLIC LISTS --------
 app.get("/api/causes", async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -104,81 +105,156 @@ app.get("/api/causes", async (req, res) => {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
-
-// Admin create cause (REAL insert + REAL audit)
-app.post("/api/admin/causes", requireAuth, requireRole("admin"), async (req, res) => {
-  const { ngo_id, title, goal_amount, category, start_date, end_date, description } = req.body;
+// -------- PUBLIC STATS (for homepage cards/table) --------
+app.get("/api/public-stats", async (req, res) => {
   try {
-    const [r] = await pool.query(
-      `INSERT INTO Cause (ngo_id, title, description, goal_amount, category, start_date, end_date)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [ngo_id, title, description, goal_amount, category || null, start_date, end_date]
-    );
+    const [[row]] = await pool.query(`
+      SELECT
+        COALESCE((SELECT SUM(amount) FROM Donation), 0) AS totalDonations,
+        COALESCE((
+          SELECT COUNT(*)
+          FROM Cause
+          WHERE
+            (start_date IS NULL OR start_date <= CURDATE())
+            AND (end_date IS NULL OR end_date >= CURDATE())
+        ), 0) AS activeCauses,
+        COALESCE((SELECT COUNT(*) FROM Users), 0) AS registeredUsers
+    `);
 
-    await pool.query(
-      "INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)",
-      [req.user.user_id, `Created cause #${r.insertId}: ${title}`]
-    );
-
-    res.status(201).json({ message: "Cause created", id: r.insertId });
+    res.json(row);
   } catch (e) {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
 
-// Admin delete cause
-app.delete("/api/admin/causes/:id", requireAuth, requireRole("admin"), async (req, res) => {
-  const id = Number(req.params.id);
+app.get("/api/ngos", async (req, res) => {
   try {
-    await pool.query("DELETE FROM Cause WHERE cause_id = ?", [id]);
-
-    await pool.query(
-      "INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)",
-      [req.user.user_id, `Deleted cause #${id}`]
-    );
-
-    res.json({ message: "Deleted" });
+    const [rows] = await pool.query("SELECT ngo_id AS id, name FROM NGO ORDER BY name");
+    res.json(rows);
   } catch (e) {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
 
-// -------- DONOR DASHBOARD --------
-
-// current user profile + stats
-app.get("/api/user/me", requireAuth, async (req, res) => {
+// -------- DONATION (GUEST ALLOWED) --------
+// Donation.user_id is NOT NULL, so we auto-create/find a donor user by email.
+app.post("/process-donation", async (req, res) => {
   try {
-    const userId = req.user.user_id;
+    const { cause_id, cause_name, amount, name, email } = req.body;
 
-    const [rows] = await pool.query(
-      `
-      SELECT 
-        u.user_id,
-        u.name,
-        u.email,
-        COALESCE(SUM(d.amount), 0) AS totalDonated,
-        COALESCE(COUNT(DISTINCT dc.cause_id), 0) AS causesSupported
-      FROM Users u
-      LEFT JOIN Donation d ON d.user_id = u.user_id
-      LEFT JOIN Donation_Cause dc ON dc.donation_id = d.donation_id
-      WHERE u.user_id = ?
-      GROUP BY u.user_id, u.name, u.email
-      `,
-      [userId]
-    );
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: "Invalid amount" });
+    }
+    if (!email || !String(email).includes("@")) {
+      return res.status(400).json({ message: "Valid email required" });
+    }
 
-    if (!rows.length) return res.status(404).json({ message: "User not found" });
-    res.json(rows[0]);
+    // 1) Resolve cause_id
+    let resolvedCauseId = cause_id ? Number(cause_id) : null;
+
+    if (!resolvedCauseId && cause_name) {
+      const [causeRows] = await pool.query(
+        "SELECT cause_id FROM Cause WHERE title = ? LIMIT 1",
+        [cause_name]
+      );
+      if (!causeRows.length) return res.status(404).json({ message: "Cause not found" });
+      resolvedCauseId = causeRows[0].cause_id;
+    }
+
+    if (!resolvedCauseId) return res.status(400).json({ message: "cause_id required" });
+
+    // 2) Find or create user by email (role: 'donor')
+    let userId;
+    const [uRows] = await pool.query("SELECT user_id FROM Users WHERE email=? LIMIT 1", [email]);
+
+    if (uRows.length) {
+      userId = uRows[0].user_id;
+
+      if (name && name.trim()) {
+        await pool.query("UPDATE Users SET name=? WHERE user_id=?", [name.trim(), userId]);
+      }
+    } else {
+      const randomPass = crypto.randomBytes(16).toString("hex");
+      const hashed = await bcrypt.hash(randomPass, 10);
+      const displayName = name && name.trim() ? name.trim() : "Guest Donor";
+
+      const [ins] = await pool.query(
+        "INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, ?)",
+        [displayName, email, hashed, "donor"]
+      );
+      userId = ins.insertId;
+    }
+
+    if (!userId) {
+      return res.status(500).json({ message: "Internal error: userId not resolved" });
+    }
+
+    // 3) Insert donation + link donation_cause (transaction)
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      const [donRes] = await conn.query(
+        "INSERT INTO Donation (user_id, amount) VALUES (?, ?)",
+        [userId, Number(amount)]
+      );
+
+      await conn.query(
+        "INSERT INTO Donation_Cause (donation_id, cause_id, amount_allocated) VALUES (?, ?, ?)",
+        [donRes.insertId, resolvedCauseId, Number(amount)]
+      );
+
+      await conn.commit();
+      return res.status(201).json({ message: "Donation recorded", donationId: donRes.insertId });
+    } catch (e) {
+      await conn.rollback();
+      throw e;
+    } finally {
+      conn.release();
+    }
+  } catch (e) {
+    return res.status(500).json({ message: "DB error", error: e.message });
+  }
+});
+
+// Logged-in donation API
+app.post("/api/donations", requireAuth, async (req, res) => {
+  try {
+    const { cause_id, amount } = req.body;
+    if (!cause_id || !amount || Number(amount) <= 0) {
+      return res.status(400).json({ message: "cause_id and valid amount required" });
+    }
+
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      const [donRes] = await conn.query(
+        "INSERT INTO Donation (user_id, amount) VALUES (?, ?)",
+        [req.user.user_id, Number(amount)]
+      );
+
+      await conn.query(
+        "INSERT INTO Donation_Cause (donation_id, cause_id, amount_allocated) VALUES (?, ?, ?)",
+        [donRes.insertId, Number(cause_id), Number(amount)]
+      );
+
+      await conn.commit();
+      res.status(201).json({ message: "Donation recorded", donationId: donRes.insertId });
+    } catch (e) {
+      await conn.rollback();
+      throw e;
+    } finally {
+      conn.release();
+    }
   } catch (e) {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
 
-// donation history of logged-in user
 app.get("/api/donations/history", requireAuth, async (req, res) => {
   try {
     const userId = req.user.user_id;
-
     const [rows] = await pool.query(
       `
       SELECT
@@ -195,24 +271,39 @@ app.get("/api/donations/history", requireAuth, async (req, res) => {
       `,
       [userId]
     );
-
     res.json(rows);
   } catch (e) {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
 
-// NGOs list (used by dashboard selects)
-app.get("/api/ngos", async (req, res) => {
+// -------- USER PROFILE --------
+app.get("/api/user/me", requireAuth, async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT ngo_id AS id, name FROM NGO ORDER BY name");
-    res.json(rows);
+    const userId = req.user.user_id;
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        u.user_id,
+        u.name,
+        u.email,
+        COALESCE(SUM(d.amount), 0) AS totalDonated,
+        COALESCE(COUNT(DISTINCT dc.cause_id), 0) AS causesSupported
+      FROM Users u
+      LEFT JOIN Donation d ON d.user_id = u.user_id
+      LEFT JOIN Donation_Cause dc ON dc.donation_id = d.donation_id
+      WHERE u.user_id = ?
+      GROUP BY u.user_id, u.name, u.email
+      `,
+      [userId]
+    );
+    if (!rows.length) return res.status(404).json({ message: "User not found" });
+    res.json(rows[0]);
   } catch (e) {
     res.status(500).json({ message: "DB error", error: e.message });
   }
 });
 
-// update profile (logged-in user)
 app.post("/api/user/update_profile", requireAuth, async (req, res) => {
   const { name, password } = req.body;
   try {
@@ -233,7 +324,6 @@ app.post("/api/user/update_profile", requireAuth, async (req, res) => {
   }
 });
 
-// register volunteer (logged-in user)
 app.post("/api/user/register_volunteer", requireAuth, async (req, res) => {
   const { skills, ngo_id, availability } = req.body;
   try {
@@ -246,12 +336,12 @@ app.post("/api/user/register_volunteer", requireAuth, async (req, res) => {
     if (existing.length) {
       await pool.query(
         "UPDATE Volunteer SET skill = ?, availability = ?, primary_ngo_id = ? WHERE user_id = ?",
-        [skills, availability || null, ngo_id, userId]
+        [skills || null, availability || null, ngo_id || null, userId]
       );
     } else {
       await pool.query(
         "INSERT INTO Volunteer (user_id, skill, availability, primary_ngo_id) VALUES (?, ?, ?, ?)",
-        [userId, skills, availability || null, ngo_id]
+        [userId, skills || null, availability || null, ngo_id || null]
       );
     }
 
@@ -261,14 +351,13 @@ app.post("/api/user/register_volunteer", requireAuth, async (req, res) => {
   }
 });
 
-// submit feedback (logged-in user)
 app.post("/api/user/submit_feedback", requireAuth, async (req, res) => {
   const { ngo_id, rating, message } = req.body;
   try {
     const userId = req.user.user_id;
     await pool.query(
       "INSERT INTO Feedback (user_id, ngo_id, rating, message) VALUES (?, ?, ?, ?)",
-      [userId, ngo_id, rating, message]
+      [userId, ngo_id, rating, message || null]
     );
     res.json({ message: "Feedback submitted" });
   } catch (e) {
@@ -276,8 +365,108 @@ app.post("/api/user/submit_feedback", requireAuth, async (req, res) => {
   }
 });
 
-// -------- REPORTS (admin-only) --------
+// -------- ADMIN: CAUSES + audit --------
+app.post("/api/admin/causes", requireAuth, requireRole("admin"), async (req, res) => {
+  const { ngo_id, title, goal_amount, category, start_date, end_date, description } = req.body;
+  try {
+    const [r] = await pool.query(
+      `INSERT INTO Cause (ngo_id, title, description, goal_amount, category, start_date, end_date)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [ngo_id, title, description, goal_amount, category || null, start_date || null, end_date || null]
+    );
 
+    await pool.query("INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)", [
+      req.user.user_id,
+      `Created cause #${r.insertId}: ${title}`,
+    ]);
+
+    res.status(201).json({ message: "Cause created", id: r.insertId });
+  } catch (e) {
+    res.status(500).json({ message: "DB error", error: e.message });
+  }
+});
+
+app.put("/api/admin/causes/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const { ngo_id, title, goal_amount, category, start_date, end_date, description } = req.body;
+
+  try {
+    await pool.query(
+      `UPDATE Cause
+       SET ngo_id=?, title=?, description=?, goal_amount=?, category=?, start_date=?, end_date=?
+       WHERE cause_id=?`,
+      [ngo_id, title, description, goal_amount, category || null, start_date || null, end_date || null, id]
+    );
+
+    await pool.query("INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)", [
+      req.user.user_id,
+      `Updated cause #${id}: ${title}`,
+    ]);
+
+    res.json({ message: "Cause updated" });
+  } catch (e) {
+    res.status(500).json({ message: "DB error", error: e.message });
+  }
+});
+
+app.delete("/api/admin/causes/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    await pool.query("DELETE FROM Cause WHERE cause_id = ?", [id]);
+
+    await pool.query("INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)", [
+      req.user.user_id,
+      `Deleted cause #${id}`,
+    ]);
+
+    res.json({ message: "Deleted" });
+  } catch (e) {
+    res.status(500).json({ message: "DB error", error: e.message });
+  }
+});
+
+// -------- ADMIN: DONATION update/delete + audit --------
+app.put("/api/admin/donations/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+  const { amount } = req.body;
+
+  try {
+    await pool.query("UPDATE Donation SET amount=? WHERE donation_id=?", [Number(amount), id]);
+    await pool.query("UPDATE Donation_Cause SET amount_allocated=? WHERE donation_id=?", [
+      Number(amount),
+      id,
+    ]);
+
+    await pool.query("INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)", [
+      req.user.user_id,
+      `Updated donation #${id} amount -> ${amount}`,
+    ]);
+
+    res.json({ message: "Donation updated" });
+  } catch (e) {
+    res.status(500).json({ message: "DB error", error: e.message });
+  }
+});
+
+app.delete("/api/admin/donations/:id", requireAuth, requireRole("admin"), async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    await pool.query("DELETE FROM Donation_Cause WHERE donation_id=?", [id]);
+    await pool.query("DELETE FROM Donation WHERE donation_id=?", [id]);
+
+    await pool.query("INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)", [
+      req.user.user_id,
+      `Deleted donation #${id}`,
+    ]);
+
+    res.json({ message: "Donation deleted" });
+  } catch (e) {
+    res.status(500).json({ message: "DB error", error: e.message });
+  }
+});
+
+// -------- REPORTS (admin-only) --------
 app.get("/api/stats", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const [[stats]] = await pool.query(`
@@ -295,8 +484,6 @@ app.get("/api/stats", requireAuth, requireRole("admin"), async (req, res) => {
 
 app.get("/api/audit", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    // if your Admin table is separate, you can map admin_id differently.
-    // Here we assume admin_id == Users.user_id for simplicity
     const [rows] = await pool.query(`
       SELECT
         a.log_id AS id,
@@ -328,26 +515,6 @@ app.get("/api/category_breakdown", requireAuth, requireRole("admin"), async (req
       JOIN Cause c ON c.cause_id = dc.cause_id
       GROUP BY COALESCE(c.category, 'Uncategorized')
       ORDER BY totalAmount DESC
-    `);
-    res.json(rows);
-  } catch (e) {
-    res.status(500).json({ message: "DB error", error: e.message });
-  }
-});
-
-app.get("/api/volunteer_assignments", requireAuth, requireRole("admin"), async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
-      SELECT
-        u.name AS volunteerName,
-        v.skill AS skillSet,
-        e.description AS assignedEvent,
-        e.start_date AS eventDate
-      FROM Volunteer_Event ve
-      JOIN Volunteer v ON v.volunteer_id = ve.volunteer_id
-      JOIN Users u ON u.user_id = v.user_id
-      JOIN Event e ON e.event_id = ve.event_id
-      ORDER BY e.start_date DESC
     `);
     res.json(rows);
   } catch (e) {
