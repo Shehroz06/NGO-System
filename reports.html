@@ -158,9 +158,94 @@ footer {
         </div>
 </div>
 
+<<<<<<< HEAD
 <footer>
     <p>&copy; 2025 Smart Donation & NGO Management System</p>
 </footer>
+=======
+        <h1>Organization Impact Dashboard</h1>
+
+        <section class="dashboard-grid">
+            
+            <div class="stat-card blue">
+                <h3>Total Funds Raised</h3>
+                <p class="stat-number" id="total-funds-stat">PKR 45.2M</p>
+                <span class="stat-desc">SQL: <code>SUM(amount) FROM Donation</code></span>
+            </div>
+
+            <div class="stat-card green">
+                <h3>Active Volunteers</h3>
+                <p class="stat-number" id="active-volunteers-stat">1,240</p>
+                <span class="stat-desc">SQL: <code>COUNT(*) FROM Volunteer</code></span>
+            </div>
+
+            <div class="stat-card orange">
+                <h3>Highest Donation</h3>
+                <p class="stat-number" id="highest-donation-stat">PKR 500,000</p>
+                <span class="stat-desc">SQL: <code>MAX(amount) FROM Donation</code></span>
+            </div>
+
+        </section>
+
+        <section class="report-panel">
+            <h2>System Audit Trail (AdminLogs)</h2>
+            <p>Records of critical administrative actions (e.g., Cause creation, user updates).</p>
+            
+            <div class="table-responsive">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Timestamp</th>
+                            <th>Actor ID</th>
+                            <th>Action Performed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-log-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <section class="report-panel">
+            <h2> Donation Breakdown by Category</h2>
+            <p>Analysis of funds collected across different cause categories.</p>
+            <div class="table-responsive">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Cause Category</th>
+                            <th>Transaction Count</th>
+                            <th>Total Amount</th>
+                            <th>Avg. Donation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-breakdown-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="report-panel">
+            <h2> Volunteer Assignments (Complex Join)</h2>
+            <p>Lists volunteers and the specific events they are assigned to.</p>
+            
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Volunteer Name</th>
+                        <th>Skill Set</th>
+                        <th>Assigned Event</th>
+                        <th>Event Date</th>
+                    </tr>
+                </thead>
+                <tbody id="volunteer-assignments-body">
+                    </tbody>
+            </table>
+        </section>
+
+    </main>
+>>>>>>> 22d280a (Update html files)
 <script>
     // ✅ Node.js API integration
 

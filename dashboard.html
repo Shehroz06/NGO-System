@@ -251,6 +251,7 @@ nav a:hover, nav a.active {
                     <label for="volunteer-email">Email:</label>
                     <input type="email" id="volunteer-email" required>
                 </div>
+<<<<<<< HEAD
                 <div class="form-group">
                     <label for="volunteer-skill">Skills (e.g., IT, Management):</label>
                     <input type="text" id="volunteer-skill" required>
@@ -260,12 +261,62 @@ nav a:hover, nav a.active {
                     <select id="volunteer-ngo" required>
                         <option value="">--- Select an NGO ---</option>
                         </select>
+=======
+
+                <h2>My Donation History</h2>
+                <div class="table-responsive">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Cause Title</th> 
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donation-history-body">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="volunteer-status-card">
+                    <h3> Become a Volunteer</h3>
+                    <p>Register your skills and availability to contribute your time to Alkhidmat's causes.</p>
+                    
+                    <form action="/register_volunteer" method="POST">
+                        <div class="form-group">
+                            <label for="volunteer-skills">Skills (e.g., Medical, Teaching, Driving)</label>
+                            <input type="text" id="volunteer-skills" name="skills" 
+                                   placeholder="List your skills, separated by commas" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="volunteer-ngo">Select Primary NGO to Help</label>
+                            <select id="volunteer-ngo" name="ngo_id" required>
+                                <option value="">--- Loading NGOs... ---</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="volunteer-availability">Availability</label>
+                            <select id="volunteer-availability" name="availability" required>
+                                <option value="Weekend">Weekends Only</option>
+                                <option value="Weekday">Weekdays (Part-time)</option>
+                                <option value="FullTime">Full Time (Temporary)</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="action-btn secondary-btn full-width">Register Me as Volunteer</button>
+                    </form>
+>>>>>>> 22d280a (Update html files)
                 </div>
                 <button type="submit" class="submit-btn">Submit Application</button>
                 <p id="volunteer-status" style="margin-top: 15px; color: green;"></p>
             </form>
         </section>
 
+<<<<<<< HEAD
         <section id="feedback" class="dashboard-section hidden">
             <h3>Submit Feedback / Complaint</h3>
             <form id="feedback-form">
@@ -274,6 +325,31 @@ nav a:hover, nav a.active {
                     <select id="feedback-ngo" required>
                         <option value="">--- Select an NGO ---</option>
                         </select>
+=======
+                <div class="feedback-card">
+                    <h3> Submit Feedback on an NGO</h3>
+                    <p>Help us ensure transparency and quality by sharing your experience.</p>
+                    <form action="/submit_feedback" method="POST">
+                        <div class="form-group">
+                            <label for="feedback-ngo">Select NGO</label>
+                            <select id="feedback-ngo" name="ngo_id" required>
+                                <option value="">--- Loading NGOs... ---</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group rating-group">
+                            <label>Rating (1-5)</label>
+                            <input type="number" id="feedback-rating" name="rating" min="1" max="5" value="5" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="feedback-message">Your Message</label>
+                            <textarea id="feedback-message" name="message" rows="3" required></textarea>
+                        </div>
+
+                        <button type="submit" class="action-btn feedback-btn full-width">Send Feedback</button>
+                    </form>
+>>>>>>> 22d280a (Update html files)
                 </div>
                 <div class="form-group">
                     <label for="feedback-type">Type:</label>
