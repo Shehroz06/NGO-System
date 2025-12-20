@@ -38,7 +38,7 @@ function requireRole(...roles) {
 app.post("/api/auth/signup", async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  const allowedRoles = ["donor", "admin", "volunteer"];
+  const allowedRoles = ["donor", "admin", "staff", "volunteer"];
   const safeRole = allowedRoles.includes(role) ? role : "donor";
 
   try {

@@ -1,246 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Smart NGO System</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
-    header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-    .logo { font-size: 1.5em; font-weight: bold; }
-    nav a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s; font-size: 14px; }
-    nav a:hover, nav a.active { background-color: #2b7049; }
-    .donate-main-btn { background-color: #ff6347; color: white !important; font-weight: bold; }
-    .dashboard-layout { display: flex; min-height: calc(100vh - 80px); }
-    .sidebar { width: 280px; background-color: #fff; padding: 30px 20px; border-right: 1px solid #eee; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); }
-    .sidebar h2 { color: #1a5632; font-size: 1.1em; text-transform: uppercase; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px; }
-    .sidebar-menu { list-style: none; padding: 0; }
-    .sidebar-menu li a { display: block; text-decoration: none; color: #555; padding: 12px 20px; margin-bottom: 8px; border-radius: 8px; transition: all 0.3s; font-weight: 500; cursor: pointer; }
-    .sidebar-menu li a:hover { background-color: #e0f2e0; color: #1a5632; }
-    .sidebar-menu li a.active-menu { background-color: #1a5632; color: white; }
-    .dashboard-content { flex-grow: 1; padding: 40px 60px; }
-    .dashboard-section { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
-    .dashboard-section h3 { color: #1a5632; margin-top: 0; margin-bottom: 25px; border-left: 5px solid #1a5632; padding-left: 15px; }
-    table { width: 100%; border-collapse: collapse; }
-    th { background-color: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #eee; }
-    td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; }
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-    .submit-btn { background-color: #1a5632; color: white; padding: 12px 30px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .hidden { display: none; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f6;
+      color: #333;
+    }
+
+    header {
+      background-color: #1a5632;
+      color: white;
+      padding: 15px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      padding: 8px 15px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      font-size: 14px;
+    }
+
+    nav a:hover,
+    nav a.active {
+      background-color: #2b7049;
+    }
+
+    .donate-main-btn {
+      background-color: #ff6347;
+      color: white !important;
+      font-weight: bold;
+    }
+
+    .dashboard-layout {
+      display: flex;
+      min-height: calc(100vh - 80px);
+    }
+
+    .sidebar {
+      width: 280px;
+      background-color: #fff;
+      padding: 30px 20px;
+      border-right: 1px solid #eee;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar h2 {
+      color: #1a5632;
+      font-size: 1.1em;
+      text-transform: uppercase;
+      border-bottom: 2px solid #f4f7f6;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar-menu li a {
+      display: block;
+      text-decoration: none;
+      color: #555;
+      padding: 12px 20px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .sidebar-menu li a:hover {
+      background-color: #e0f2e0;
+      color: #1a5632;
+    }
+
+    .sidebar-menu li a.active-menu {
+      background-color: #1a5632;
+      color: white;
+    }
+
+    .dashboard-content {
+      flex-grow: 1;
+      padding: 40px 60px;
+    }
+
+    .dashboard-section {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 30px;
+    }
+
+    .dashboard-section h3 {
+      color: #1a5632;
+      margin-top: 0;
+      margin-bottom: 25px;
+      border-left: 5px solid #1a5632;
+      padding-left: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      text-align: left;
+      padding: 15px;
+      border-bottom: 2px solid #eee;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .submit-btn {
+      background-color: #1a5632;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
+
 <body>
 
-<header>
-  <div class="logo">NGO Management System</div>
-  <nav id="top-nav">
-    <a href="home.html">Home</a>
-    <a href="dashboard.html" class="active">Dashboard</a>
-    <a href="#" id="logout-link">Logout</a>
-    <a href="donate.html" class="donate-main-btn">Donate Now</a>
-  </nav>
-</header>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav id="top-nav">
+      <a href="home.html">Home</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="#" id="logout-link">Logout</a>
+      <a href="donate.html" class="donate-main-btn">Donate Now</a>
+    </nav>
+  </header>
 
-<div class="dashboard-layout">
-  <aside class="sidebar">
-    <h2 id="acc-type-label">User Account</h2>
-    <ul class="sidebar-menu">
-      <li><a class="active-menu" data-target="history">Donation History</a></li>
-      <li><a data-target="volunteer">Volunteer Sign-up</a></li>
-      <li><a data-target="feedback">Feedback & Complaints</a></li>
-      <li><a data-target="update-profile">Update Profile</a></li>
-    </ul>
-  </aside>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2 id="acc-type-label">User Account</h2>
+      <ul class="sidebar-menu">
+        <li><a class="active-menu" data-target="history">Donation History</a></li>
+        <li><a data-target="volunteer">Volunteer Sign-up</a></li>
+        <li><a data-target="feedback">Feedback & Complaints</a></li>
+        <li><a data-target="update-profile">Update Profile</a></li>
+      </ul>
+    </aside>
 
-  <main class="dashboard-content">
-    <h1 id="welcome-msg">Welcome!</h1>
+    <main class="dashboard-content">
+      <h1 id="welcome-msg">Welcome!</h1>
 
-    <section id="history" class="dashboard-section">
-      <h3>Recent Contributions</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Cause Title</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Receipt</th>
-          </tr>
-        </thead>
-        <tbody id="donation-history-body">
-          <tr><td colspan="5">Loading your history...</td></tr>
-        </tbody>
-      </table>
-    </section>
+      <section id="history" class="dashboard-section">
+        <h3>Recent Contributions</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Cause Title</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Receipt</th>
+            </tr>
+          </thead>
+          <tbody id="donation-history-body">
+            <tr>
+              <td colspan="5">Loading your history...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-    <section id="update-profile" class="dashboard-section hidden">
-      <h3>Update Your Profile</h3>
-      <form id="profile-form">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="prof-name" required>
-        </div>
-        <div class="form-group">
-          <label>New Password</label>
-          <input type="password" id="prof-pass" placeholder="Enter new password (optional)">
-        </div>
-        <button type="submit" class="submit-btn">Save Changes</button>
-        <p id="profile-status" style="margin-top:15px;"></p>
-      </form>
-    </section>
+      <section id="update-profile" class="dashboard-section hidden">
+        <h3>Update Your Profile</h3>
+        <form id="profile-form">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="prof-name" required>
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="prof-pass" placeholder="Enter new password (optional)">
+          </div>
+          <button type="submit" class="submit-btn">Save Changes</button>
+          <p id="profile-status" style="margin-top:15px;"></p>
+        </form>
+      </section>
 
-    <section id="volunteer" class="dashboard-section hidden">
-      <h3>Become a Volunteer</h3>
-      <form id="volunteer-form">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="vol-name" required>
-        </div>
-        <div class="form-group">
-          <label>Skills (e.g., Marketing, IT)</label>
-          <input type="text" id="vol-skill" required>
-        </div>
-        <div class="form-group">
-          <label>NGO</label>
-          <select id="vol-ngo" required><option value="">Select NGO</option></select>
-        </div>
-        <div class="form-group">
-          <label>Availability</label>
-          <select id="vol-avail" required>
-            <option value="Weekend">Weekends Only</option>
-            <option value="Weekday">Weekdays</option>
-          </select>
-        </div>
-        <button type="submit" class="submit-btn">Submit Application</button>
-        <p id="vol-status"></p>
-      </form>
-    </section>
+      <section id="volunteer" class="dashboard-section hidden">
+        <h3>Become a Volunteer</h3>
+        <form id="volunteer-form">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="vol-name" required>
+          </div>
+          <div class="form-group">
+            <label>Skills (e.g., Marketing, IT)</label>
+            <input type="text" id="vol-skill" required>
+          </div>
+          <div class="form-group">
+            <label>NGO</label>
+            <select id="vol-ngo" required>
+              <option value="">Select NGO</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Availability</label>
+            <select id="vol-avail" required>
+              <option value="Weekend">Weekends Only</option>
+              <option value="Weekday">Weekdays</option>
+            </select>
+          </div>
+          <button type="submit" class="submit-btn">Submit Application</button>
+          <p id="vol-status"></p>
+        </form>
+      </section>
 
-    <section id="feedback" class="dashboard-section hidden">
-      <h3>Submit Feedback</h3>
-      <form id="feedback-form">
-        <div class="form-group">
-          <label>NGO</label>
-          <select id="feed-ngo" required><option value="">Select NGO</option></select>
-        </div>
-        <div class="form-group">
-          <label>Message</label>
-          <textarea id="feed-msg" rows="4" required></textarea>
-        </div>
-        <button type="submit" class="submit-btn">Send Feedback</button>
-        <p id="feed-status"></p>
-      </form>
-    </section>
-  </main>
-</div>
+      <section id="feedback" class="dashboard-section hidden">
+        <h3>Submit Feedback</h3>
+        <form id="feedback-form">
+          <div class="form-group">
+            <label>NGO</label>
+            <select id="feed-ngo" required>
+              <option value="">Select NGO</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="feed-msg" rows="4" required></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Send Feedback</button>
+          <p id="feed-status"></p>
+        </form>
+      </section>
+    </main>
+  </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem("authToken");
-  const role = localStorage.getItem("userRole");
-  const userName = localStorage.getItem("userName") || "User";
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem("authToken");
+      const role = localStorage.getItem("userRole");
+      const userName = localStorage.getItem("userName") || "User";
 
-  if (!token) { window.location.href = "login.html"; return; }
+      if (!token) { window.location.href = "login.html"; return; }
 
-  // ✅ admin goes to admin panel
-  if (role === "admin") {
-    window.location.href = "admin.html";
-    return;
-  }
+      // ✅ admin goes to admin panel
+      if (role === "admin") {
+        window.location.href = "admin.html";
+        return;
+      }
 
-  // donor/volunteer allowed
-  document.getElementById('welcome-msg').textContent = `Welcome back, ${userName}!`;
+      // donor/volunteer allowed
+      document.getElementById('welcome-msg').textContent = `Welcome back, ${userName}!`;
 
-  document.getElementById("logout-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    localStorage.clear();
-    window.location.href = "home.html";
-  });
+      document.getElementById("logout-link").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = "home.html";
+      });
 
-  const authHeaders = {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  };
+      const authHeaders = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      };
 
-  // Tab Switching
-  const menuLinks = document.querySelectorAll(".sidebar-menu li a[data-target]");
-  const sections = document.querySelectorAll(".dashboard-section");
+      // Tab Switching
+      const menuLinks = document.querySelectorAll(".sidebar-menu li a[data-target]");
+      const sections = document.querySelectorAll(".dashboard-section");
 
-  menuLinks.forEach(link => {
-    link.addEventListener("click", () => {
-      const target = link.getAttribute("data-target");
-      sections.forEach(s => s.classList.add("hidden"));
-      document.getElementById(target).classList.remove("hidden");
-      menuLinks.forEach(l => l.classList.remove("active-menu"));
-      link.classList.add("active-menu");
-    });
-  });
+      menuLinks.forEach(link => {
+        link.addEventListener("click", () => {
+          const target = link.getAttribute("data-target");
+          sections.forEach(s => s.classList.add("hidden"));
+          document.getElementById(target).classList.remove("hidden");
+          menuLinks.forEach(l => l.classList.remove("active-menu"));
+          link.classList.add("active-menu");
+        });
+      });
 
-  // Profile Update (frontend-only)
-  document.getElementById('prof-name').value = userName;
-  document.getElementById('profile-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newName = document.getElementById('prof-name').value;
-    localStorage.setItem("userName", newName);
-    document.getElementById('profile-status').textContent = "Profile updated successfully!";
-    document.getElementById('profile-status').style.color = "green";
-    setTimeout(() => location.reload(), 800);
-  });
+      // Profile Update (frontend-only)
+      document.getElementById('prof-name').value = userName;
+      document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('prof-name').value;
+        localStorage.setItem("userName", newName);
+        document.getElementById('profile-status').textContent = "Profile updated successfully!";
+        document.getElementById('profile-status').style.color = "green";
+        setTimeout(() => location.reload(), 800);
+      });
 
-  // Donation History (API)
-  fetch("http://localhost:3000/api/donations/history", { headers: authHeaders })
-    .then(res => res.json())
-    .then(data => {
-      const tbody = document.getElementById("donation-history-body");
-      tbody.innerHTML = data.length ? "" : "<tr><td colspan='5'>No donations found.</td></tr>";
-      data.forEach(item => {
-        tbody.innerHTML += `<tr>
+      // Donation History (API)
+      fetch("http://localhost:3000/api/donations/history", { headers: authHeaders })
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("donation-history-body");
+          tbody.innerHTML = data.length ? "" : "<tr><td colspan='5'>No donations found.</td></tr>";
+          data.forEach(item => {
+            tbody.innerHTML += `<tr>
           <td>${new Date(item.date || item.donation_date).toLocaleDateString()}</td>
           <td><strong>${item.causeTitle || item.title || "—"}</strong></td>
           <td>PKR ${(item.amount || 0).toLocaleString()}</td>
           <td>${item.method || "—"}</td>
           <td><a href="#" class="receipt-link">View PDF</a></td>
         </tr>`;
-      });
-    })
-    .catch(() => {
-      document.getElementById("donation-history-body").innerHTML =
-        "<tr><td colspan='5'>Unable to load history (backend issue).</td></tr>";
-    });
+          });
+        })
+        .catch(() => {
+          document.getElementById("donation-history-body").innerHTML =
+            "<tr><td colspan='5'>Unable to load history (backend issue).</td></tr>";
+        });
 
-  // NGOs
-  fetch("http://localhost:3000/api/ngos")
-    .then(res => res.json())
-    .then(ngos => {
-      const vSel = document.getElementById("vol-ngo");
-      const fSel = document.getElementById("feed-ngo");
-      ngos.forEach(ngo => {
-        const id = ngo.ngo_id ?? ngo.id;
-        const opt = `<option value="${id}">${ngo.name}</option>`;
-        vSel.innerHTML += opt;
-        fSel.innerHTML += opt;
+      // NGOs
+      fetch("http://localhost:3000/api/ngos")
+        .then(res => res.json())
+        .then(ngos => {
+          const vSel = document.getElementById("vol-ngo");
+          const fSel = document.getElementById("feed-ngo");
+          ngos.forEach(ngo => {
+            const id = ngo.ngo_id ?? ngo.id;
+            const opt = `<option value="${id}">${ngo.name}</option>`;
+            vSel.innerHTML += opt;
+            fSel.innerHTML += opt;
+          });
+        });
+
+      // Volunteer Form (API placeholder)
+      document.getElementById('volunteer-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('http://localhost:3000/api/volunteer', {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({
+            name: document.getElementById('vol-name').value,
+            skill: document.getElementById('vol-skill').value,
+            ngoId: document.getElementById('vol-ngo').value,
+            availability: document.getElementById('vol-avail').value
+          })
+        });
+        document.getElementById('vol-status').textContent = res.ok ? "Application sent!" : "Failed to send.";
       });
     });
-
-  // Volunteer Form (API placeholder)
-  document.getElementById('volunteer-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const res = await fetch('http://localhost:3000/api/volunteer', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        name: document.getElementById('vol-name').value,
-        skill: document.getElementById('vol-skill').value,
-        ngoId: document.getElementById('vol-ngo').value,
-        availability: document.getElementById('vol-avail').value
-      })
-    });
-    document.getElementById('vol-status').textContent = res.ok ? "Application sent!" : "Failed to send.";
-  });
-});
-</script>
+  </script>
 
 </body>
+
 </html>

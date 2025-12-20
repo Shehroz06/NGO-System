@@ -181,13 +181,24 @@
     }
 
     // If already logged in, route correctly
-    (function boot() {
-      const token = localStorage.getItem("authToken");
-      const role = localStorage.getItem("userRole");
-      if (token && role) {
-        window.location.href = (role === "admin") ? "admin.html" : "dashboard.html";
-      }
-    })();
+(function boot() {
+  const token = localStorage.getItem("authToken");
+  const role = (localStorage.getItem("userRole") || "").toLowerCase();
+  if (token && role) {
+    console.log("Token:", token);
+    console.log("Role:", role);
+
+    const target =
+      (role === "admin") ? "admin.html" :
+      (role === "staff") ? "staff-dashboard.html" :
+      "dashboard.html";
+
+    console.log("Redirecting to:", target);
+
+    window.location.href = target;
+  }
+  })();
+
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -203,14 +214,21 @@
 
         const data = await response.json();
 
-        if (response.ok) {
-          // ✅ consistent keys
-          localStorage.setItem('authToken', data.token);
-          localStorage.setItem('userRole', data.role);
-          localStorage.setItem('userName', data.name || data.user?.name || "User");
+if (response.ok) {
+  console.log("LOGIN SUCCESS");
+  console.log("Token:", data.token);
+  console.log("Role from API:", data.role);
 
-          window.location.href = (data.role === 'admin') ? 'admin.html' : 'dashboard.html';
-        } else {
+  localStorage.setItem('authToken', data.token);
+  localStorage.setItem('userRole', data.role);
+
+  console.log("Stored Role:", localStorage.getItem("userRole"));
+
+  window.location.href =
+    (data.role === 'admin') ? 'admin.html' :
+    (data.role === 'staff') ? 'staff-dashboard.html' :
+    'dashboard.html';
+} else {
           alert(data.message || "Login failed. Please check your email and password.");
         }
       } catch (err) {
