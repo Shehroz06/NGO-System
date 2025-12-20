@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <style>
     /* General Resets and Typography */
 body {
@@ -8,80 +7,53 @@ body {
     background-color: #f4f7f6;
     color: #333;
 }
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<<<<<<< HEAD
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports & Logs - Smart NGO System</title>
-    <style>
-        /* --- YOUR ORIGINAL STYLES --- */
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            color: #333;
-        }
->>>>>>> 8a68def (Changes made)
-=======
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reports & Logs - NGO Management System</title>
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
-    header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-    .logo { font-size: 1.5em; font-weight: bold; }
-    nav a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s; font-size: 14px; }
-    nav a:hover { background-color: #154528; }
-    
-    h1 { color: #1a5632; margin-bottom: 20px; }
-    .report-section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); margin-bottom: 30px; }
-    .report-section h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: #1a5632; margin-top: 0; }
-    .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .data-table th, .data-table td { text-align: left; padding: 10px; border-bottom: 1px solid #ddd; }
-    .data-table th { background-color: #f8f8f8; color: #333; }
-    .report-chart { height: 300px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; margin-top: 15px; border-radius: 5px; color: #666; }
-    .log-table-container { max-height: 400px; overflow-y: auto; }
-  </style>
->>>>>>> 2c27cb2 (updated till presentation)
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const role = localStorage.getItem("userRole");
-    const token = localStorage.getItem("authToken");
+/* Header Styling */
+header {
+    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
+    color: white;
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    if (!token || role !== "admin") {
-      alert("Access Denied. Admins only.");
-      window.location.href = "login.html";
-      return;
-    }
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
 
-    const navAuth = document.getElementById("nav-auth");
-    if (navAuth) {
-      navAuth.textContent = "Logout";
-      navAuth.href = "#";
-      navAuth.addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.clear();
-        window.location.href = "home.html";
-      });
-    }
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 25px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
 
-    loadPublicStats();
-    loadAuditLogsFromDB(token);
-  });
+nav a:hover, nav a.active {
+    background-color: #2b7049;
+}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        .dashboard-layout {
-            display: flex;
-            min-height: calc(100vh - 80px);
-        }
+/* Donation Button Styling - ADDED FOR UNIFORMITY */
+.donate-main-btn {
+    background-color: #ff6347; /* Bright Tomato color */
+    color: white !important; /* Ensure visibility */
+    padding: 10px 20px !important;
+    border-radius: 5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 20px; /* Separator from other links */
+    transition: background-color 0.3s, transform 0.1s;
+}
 
-<<<<<<< HEAD
+.donate-main-btn:hover {
+    background-color: #e55338;
+    transform: translateY(-1px);
+}
+
 /* Main Content Container */
 .container {
     max-width: 1000px;
@@ -165,73 +137,10 @@ footer {
     background-color: #fff;
 }
 </style>
-=======
-        .sidebar {
-            width: 280px;
-            background-color: #fff;
-            padding: 30px 20px;
-            border-right: 1px solid #eee;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar h2 {
-=======
-        h1 {
->>>>>>> c3bf509 (fix)
-            color: #1a5632;
-            margin-bottom: 20px;
-        }
-=======
-  async function loadPublicStats() {
-    try {
-      const res = await fetch("http://localhost:3000/api/public-stats");
-      if (!res.ok) throw new Error("Failed to fetch public stats");
-      const stats = await res.json();
->>>>>>> 2c27cb2 (updated till presentation)
-
-      const total = Number(stats.totalDonations || 0);
-      const td1 = document.getElementById("totalDonations");
-      const td2 = document.getElementById("activeCauses");
-      const td3 = document.getElementById("registeredUsers");
-
-<<<<<<< HEAD
-        /* Table styles */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .data-table th, .data-table td {
-            text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .data-table th {
-            background-color: #f8f8f8;
-            color: #333;
-        }
-        .report-chart {
-            height: 300px; /* Placeholder for chart library integration */
-            background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 15px;
-            border-radius: 5px;
-            color: #666;
-        }
-        .log-table-container {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-    </style>
-<<<<<<< HEAD
->>>>>>> 8a68def (Changes made)
 </head>
 <body>
 
 <header>
-<<<<<<< HEAD
     <div class="logo">Smart Donation & NGO System</div>
     <nav>
         <a href="home.html" class="active">Causes</a>
@@ -249,156 +158,7 @@ footer {
         </div>
 </div>
 
-<<<<<<< HEAD
-<footer>
-    <p>&copy; 2025 Smart Donation & NGO Management System</p>
-</footer>
-=======
         <h1>Organization Impact Dashboard</h1>
-=======
-    <div class="logo">Smart NGO System</div>
-    <nav id="top-nav">
-        <a href="home.html">Causes</a>
-        <a href="dashboard.html" id="nav-dash">My Dashboard</a>
-        <a href="admin.html" id="nav-admin" class="hidden">Admin Panel</a>
-        <a href="login.html" onclick="localStorage.clear()">Logout</a>
-        <a href="donate.html" class="donate-main-btn">Donate Now</a>
-    </nav>
-</header>
-=======
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const role = localStorage.getItem('role');
-            const token = localStorage.getItem('token');
-            
-            // Redirect if not admin (Functionality 1: Reports hidden from user)
-            if (role !== 'admin' || !token) {
-                alert("Access Denied. Admins only.");
-                window.location.href = 'login.html';
-                return; 
-            }
-            
-            // --- Navigation Logic ---
-            const navAdmin = document.getElementById('nav-admin');
-            const navReports = document.getElementById('nav-reports');
-            const navDashboard = document.getElementById('nav-dashboard');
-            const navAuth = document.getElementById('nav-auth');
-=======
-      if (td1) td1.textContent = "PKR " + total.toLocaleString();
-      if (td2) td2.textContent = Number(stats.activeCauses || 0);
-      if (td3) td3.textContent = Number(stats.registeredUsers || 0);
-    } catch (err) {
-      console.error("Failed to load stats:", err);
-    }
-  }
->>>>>>> 2c27cb2 (updated till presentation)
-
-  async function loadAuditLogsFromDB(token) {
-    try {
-      const res = await fetch("http://localhost:3000/api/audit", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch audit logs");
-      const logs = await res.json();
-
-      const logBody = document.getElementById("log-body");
-      if (!logBody) return;
-
-      if (!logs.length) {
-        logBody.innerHTML = "<tr><td colspan='2'>No recent admin actions.</td></tr>";
-        return;
-      }
-
-      logBody.innerHTML = "";
-      logs.forEach((log) => {
-        const ts = log.timestamp ? new Date(log.timestamp).toLocaleString() : "-";
-        logBody.innerHTML += `<tr><td>${ts}</td><td>${log.actionDetails || "-"}</td></tr>`;
-      });
-    } catch (err) {
-      console.error("Failed to load audit logs:", err);
-      const logBody = document.getElementById("log-body");
-      if (logBody) logBody.innerHTML = "<tr><td colspan='2'>Failed to load logs.</td></tr>";
-    }
-  }
-</script>
-
-</head>
-<body>
-
-<<<<<<< HEAD
-    <header>
-        <div class="logo">Smart NGO System</div>
-        <nav>
-            <a href="home.html">Home (Causes)</a>
-            <a href="donate.html">Donate</a>
-            <a href="dashboard.html" id="nav-dashboard" style="display:none;">Dashboard</a>
-            <a href="admin.html" id="nav-admin" style="display:none;">Admin Panel</a>
-            <a href="reports.html" id="nav-reports" style="display:none;">Reports/Logs</a>
-            <a href="login.html" id="nav-auth">Login</a>
-        </nav>
-    </header>
->>>>>>> c3bf509 (fix)
-=======
-<header>
-  <div class="logo">NGO Management System</div>
-  <nav>
-    <a href="home.html">Home</a>
-    <a href="admin.html">Admin Panel</a>
-    <a href="reports.html">Reports/Logs</a>
-    <a href="login.html" id="nav-auth">Login</a>
-  </nav>
-</header>
->>>>>>> 2c27cb2 (updated till presentation)
-
-<div class="reports-container">
-  <h1> System Reports & Logs</h1>
-
-  <section id="key-metrics" class="report-section">
-    <h2>Key System Metrics</h2>
-    
-<table class="data-table" style="width: 50%; margin-top: 25px;">
-  <tr><th>Total Donations</th><td id="totalDonations">PKR 0</td></tr>
-  <tr><th>Active Causes</th><td id="activeCauses">0</td></tr>
-  <tr><th>Registered Users</th><td id="registeredUsers">0</td></tr>
-</table>
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-        <section id="volunteer" class="dashboard-section hidden">
-            <h3>Become a Volunteer</h3>
-            <form id="volunteer-form">
-                <div class="form-group"><label>Full Name</label><input type="text" id="vol-name" required></div>
-                <div class="form-group"><label>Skills</label><input type="text" id="vol-skill" required></div>
-                <div class="form-group"><label>Preferred NGO</label><select id="vol-ngo" required><option value="">Select NGO</option></select></div>
-                <div class="form-group">
-                    <label>Availability</label>
-                    <select id="vol-avail" required>
-                        <option value="Weekend">Weekends Only</option><option value="Weekday">Weekdays</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-btn">Submit Application</button>
-                <p id="vol-status"></p>
-            </form>
-        </section>
-
-        <section id="feedback" class="dashboard-section hidden">
-            <h3>Submit Feedback</h3>
-            <form id="feedback-form">
-                <div class="form-group"><label>Target NGO</label><select id="feed-ngo" required><option value="">Select NGO</option></select></div>
-                <div class="form-group">
-                    <label>Type</label>
-                    <select id="feed-type" required>
-                        <option value="feedback">General Feedback</option><option value="complaint">Complaint</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Your Message</label><textarea id="feed-msg" rows="5" required></textarea></div>
-                <button type="submit" class="submit-btn">Send Feedback</button>
-                <p id="feed-status"></p>
-            </form>
-        </section>
-    </main>
-</div>
->>>>>>> 8a68def (Changes made)
 
         <section class="dashboard-grid">
             
@@ -480,10 +240,7 @@ footer {
         </section>
 
     </main>
->>>>>>> 22d280a (Update html files)
 <script>
-<<<<<<< HEAD
-<<<<<<< HEAD
     // ✅ Node.js API integration
 
 fetch("http://localhost:3000/api/causes")
@@ -533,180 +290,6 @@ fetch("http://localhost:3000/api/causes")
     const container = document.getElementById("cause-container");
     container.innerHTML = `<p style="color: red;">Failed to load donation causes. Check server connection.</p>`;
   });
-=======
-document.addEventListener('DOMContentLoaded', () => {
-=======
-document.addEventListener('DOMContentLoaded', async () => {
->>>>>>> 39eaa0a (fix)
-    const token = localStorage.getItem("authToken");
-    const role = localStorage.getItem("userRole");
-    const name = localStorage.getItem("userName") || "User";
-
-    if (!token) { window.location.href = "login.html"; return; }
-
-    const authHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${token}` };
-
-    // 1. Role Detection & UI Adjustment
-    if (role === 'admin' || role === 'ngo_staff') {
-        document.getElementById('welcome-msg').innerText = "System Audit Report";
-        document.getElementById('sidebar-title').innerText = "Admin Console";
-        document.getElementById('nav-admin').classList.remove('hidden');
-        
-        // HIDE DASHBOARD LINK FROM ADMINS
-        document.getElementById('nav-dash').classList.add('hidden'); 
-        
-        document.getElementById('donor-menu').classList.add('hidden');
-        document.getElementById('admin-menu').classList.remove('hidden');
-        
-        // Default View for Admin
-        document.getElementById('history').classList.add('hidden');
-        document.getElementById('admin-stats').classList.remove('hidden');
-        
-        loadAdminReports();
-    } else {
-        document.getElementById('welcome-msg').innerText = `Report for ${name}`;
-        loadDonorReports();
-    }
-
-    // 2. Navigation Handler
-    const menuLinks = document.querySelectorAll(".sidebar-menu li a");
-    menuLinks.forEach(link => {
-        link.addEventListener("click", (e) => {
-            const target = link.getAttribute("data-target");
-            if (!target) return;
-            e.preventDefault();
-            document.querySelectorAll(".dashboard-section").forEach(s => s.classList.add("hidden"));
-            document.getElementById(target).classList.remove("hidden");
-            menuLinks.forEach(l => l.classList.remove("active-menu"));
-            link.classList.add("active-menu");
-        });
-    });
-
-    // 3. UPDATED Admin Data Loading with Table-style Logs
-    async function loadAdminReports() {
-        try {
-            const [ngoRes, causeRes] = await Promise.all([
-                fetch("http://localhost:3000/api/ngos"),
-                fetch("http://localhost:3000/api/causes")
-            ]);
-            const ngos = await ngoRes.json();
-            const causes = await causeRes.json();
-            
-            document.getElementById('stat-ngos').innerText = ngos.length;
-            const total = causes.reduce((s, c) => s + Number(c.collected), 0);
-            document.getElementById('stat-money').innerText = `PKR ${total.toLocaleString()}`;
-
-            // Professional Log Data
-            const logs = [
-                { ts: "2023-12-16 14:02", act: "SYNC", details: "NGO List synchronized", type: "success" },
-                { ts: "2023-12-16 12:45", act: "AUTH", details: "Admin session validated", type: "info" },
-                { ts: "2023-12-15 18:30", act: "ALERT", details: "Goal reached for ID#5", type: "warning" }
-            ];
-
-            // Render as professional table instead of terminal
-            document.getElementById('log-display').innerHTML = `
-                <table class="log-table">
-=======
-        <section id="audit-logs" class="report-section" style="margin-top: 50px;">
-            <h2>Admin Audit Logs</h2>
-            <div class="log-table-container">
-                <table class="data-table">
->>>>>>> c3bf509 (fix)
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="log-body">
-                        <tr><td colspan="2">Loading admin logs...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section id="volunteer-reports" class="report-section">
-            <h2>Volunteer Applications</h2>
-            <p>Table of recent volunteer sign-ups for admin review.</p>
-        </section>
-=======
-  </section>
->>>>>>> 2c27cb2 (updated till presentation)
-
-  <section id="audit-logs" class="report-section" style="margin-top: 50px;">
-    <h2>Admin Audit Logs</h2>
-    <div class="log-table-container">
-      <table class="data-table">
-        <thead>
-          <tr><th>Timestamp</th><th>Action</th></tr>
-        </thead>
-        <tbody id="log-body">
-          <tr><td colspan="2">Loading admin logs...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="volunteer-reports" class="report-section">
-    <h2>Volunteer Applications</h2>
-    <p>Will integrate later.</p>
-  </section>
-</div>
-
-<<<<<<< HEAD
-        // Example: Function to load Admin Reports (e.g., volunteer applications, user stats)
-        async function loadAdminReports() {
-            try {
-                // Example API call to get admin-level reports
-                // const res = await fetch("http://localhost:3000/api/admin/reports/volunteer", { headers: authHeaders });
-                // const data = await res.json();
-                // ... update table ...
-                console.log("Admin Reports API called (Placeholder)");
-
-            } catch (err) {
-                console.error("Failed to load admin reports", err);
-            }
-        }
-
-<<<<<<< HEAD
-    // 4. Donor Data
-    function loadDonorReports() {
-        fetch("http://localhost:3000/api/donations/history", { headers: authHeaders })
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.getElementById("donation-history-body");
-                tbody.innerHTML = data.length ? "" : "<tr><td colspan='5'>No donations found.</td></tr>";
-                data.forEach(item => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${new Date(item.date).toLocaleDateString()}</td>
-                            <td><strong>${item.causeTitle}</strong></td>
-                            <td>PKR ${item.amount.toLocaleString()}</td>
-                            <td>${item.method}</td>
-                            <td><a href="#" style="color:#ff6347">Download</a></td>
-                        </tr>`;
-                });
-            });
-    }
-
-    // 5. Populate NGO Dropdowns
-    fetch("http://localhost:3000/api/ngos").then(res => res.json()).then(ngos => {
-        const vSel = document.getElementById("vol-ngo");
-        const fSel = document.getElementById("feed-ngo");
-        ngos.forEach(n => {
-            const opt = `<option value="${n.id}">${n.name}</option>`;
-            if(vSel) vSel.innerHTML += opt;
-            if(fSel) fSel.innerHTML += opt;
-        });
-    });
-});
->>>>>>> 8a68def (Changes made)
 </script>
-=======
-        // loadAdminReports(); // Uncomment to activate on page load
-    </script>
->>>>>>> c3bf509 (fix)
-=======
->>>>>>> 2c27cb2 (updated till presentation)
 </body>
 </html>
