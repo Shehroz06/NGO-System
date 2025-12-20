@@ -133,7 +133,7 @@
       <form id="register-form" class="hidden">
         <div class="form-group">
           <label>Full Name</label>
-          <input type="text" id="reg-name" placeholder="John Doe" required>
+          <input type="text" id="reg-name" placeholder="Ali Akbar" required>
         </div>
 
         <div class="form-group">
@@ -181,23 +181,23 @@
     }
 
     // If already logged in, route correctly
-(function boot() {
-  const token = localStorage.getItem("authToken");
-  const role = (localStorage.getItem("userRole") || "").toLowerCase();
-  if (token && role) {
-    console.log("Token:", token);
-    console.log("Role:", role);
+    (function boot() {
+      const token = localStorage.getItem("authToken");
+      const role = (localStorage.getItem("userRole") || "").toLowerCase();
+      if (token && role) {
+        console.log("Token:", token);
+        console.log("Role:", role);
 
-    const target =
-      (role === "admin") ? "admin.html" :
-      (role === "staff") ? "staff-dashboard.html" :
-      "dashboard.html";
+        const target =
+          (role === "admin") ? "admin.html" :
+            (role === "staff") ? "staff-dashboard.html" :
+              "dashboard.html";
 
-    console.log("Redirecting to:", target);
+        console.log("Redirecting to:", target);
 
-    window.location.href = target;
-  }
-  })();
+        window.location.href = target;
+      }
+    })();
 
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -214,21 +214,21 @@
 
         const data = await response.json();
 
-if (response.ok) {
-  console.log("LOGIN SUCCESS");
-  console.log("Token:", data.token);
-  console.log("Role from API:", data.role);
+        if (response.ok) {
+          console.log("LOGIN SUCCESS");
+          console.log("Token:", data.token);
+          console.log("Role from API:", data.role);
 
-  localStorage.setItem('authToken', data.token);
-  localStorage.setItem('userRole', data.role);
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userRole', data.role);
 
-  console.log("Stored Role:", localStorage.getItem("userRole"));
+          console.log("Stored Role:", localStorage.getItem("userRole"));
 
-  window.location.href =
-    (data.role === 'admin') ? 'admin.html' :
-    (data.role === 'staff') ? 'staff-dashboard.html' :
-    'dashboard.html';
-} else {
+          window.location.href =
+            (data.role === 'admin') ? 'admin.html' :
+              (data.role === 'staff') ? 'staff-dashboard.html' :
+                'dashboard.html';
+        } else {
           alert(data.message || "Login failed. Please check your email and password.");
         }
       } catch (err) {
@@ -254,10 +254,16 @@ if (response.ok) {
 
         if (response.ok) {
           alert("Account created successfully! You can now login.");
+
           toggleAuth('login');
+
+          document.getElementById('register-form').reset();
+
+          window.location.reload();
         } else {
           alert(data.message || "Registration failed.");
         }
+
       } catch (err) {
         alert("Error connecting to server.");
       }
