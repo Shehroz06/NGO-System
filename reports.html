@@ -1,295 +1,258 @@
-<style>
-    /* General Resets and Typography */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
-    color: #333;
-}
+<!DOCTYPE html>
+<html lang="en">
 
-/* Header Styling */
-header {
-    background-color: #1a5632; /* Deep green, reflecting Alkhidmat's branding */
-    color: white;
-    padding: 15px 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Logs - Smart NGO System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
 
-.logo {
-    font-size: 1.5em;
-    font-weight: bold;
-}
+        header {
+            background-color: #1a5632;
+            color: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 25px;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
 
-nav a:hover, nav a.active {
-    background-color: #2b7049;
-}
+        nav a:hover,
+        nav a.active {
+            background-color: #2b7049;
+        }
 
-/* Donation Button Styling - ADDED FOR UNIFORMITY */
-.donate-main-btn {
-    background-color: #ff6347; /* Bright Tomato color */
-    color: white !important; /* Ensure visibility */
-    padding: 10px 20px !important;
-    border-radius: 5px;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-left: 20px; /* Separator from other links */
-    transition: background-color 0.3s, transform 0.1s;
-}
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
 
-.donate-main-btn:hover {
-    background-color: #e55338;
-    transform: translateY(-1px);
-}
+        nav a:hover {
+            background-color: #154528;
+        }
 
-/* Main Content Container */
-.container {
-    max-width: 1000px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
+        .reports-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
 
-/* Cause Card Styling */
-.cause-card {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
+        h1 {
+            color: #1a5632;
+            margin-bottom: 20px;
+        }
 
-.cause-title {
-    color: #1a5632;
-    margin-top: 0;
-}
+        .report-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
 
-.ngo-name {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 15px;
-}
+        .report-section h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            color: #1a5632;
+            margin-top: 0;
+        }
 
-.description {
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
 
-/* Progress Bar */
-.progress-bar-container {
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
 
-.progress-bar {
-    height: 15px;
-    background-color: #4CAF50; /* Primary success color */
-    transition: width 0.4s ease;
-    text-align: right;
-}
+        .data-table th {
+            background-color: #f8f8f8;
+            color: #333;
+        }
 
-/* Stats and Donate Button */
-.stats {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95em;
-    margin-bottom: 15px;
-    color: #444;
-}
+        .report-chart {
+            height: 300px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+            border-radius: 5px;
+            color: #666;
+        }
 
-.donate-btn {
-    display: inline-block;
-    background-color: #f4a261; /* Orange/Gold color for call to action */
-    color: white;
-    padding: 10px 15px;
-    text-align: center;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
+        .log-table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
 
-.donate-btn:hover {
-    background-color: #e76f51;
-}
+        .donate-main-btn {
+            background-color: #ff6347;
+            color: white !important;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
 
-/* Footer Styling */
-footer {
-    text-align: center;
-    padding: 20px 0;
-    margin-top: 50px;
-    border-top: 1px solid #eee;
-    color: #777;
-    background-color: #fff;
-}
-</style>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const role = localStorage.getItem("userRole");
+            const token = localStorage.getItem("authToken");
+
+            if (!token || role !== "admin") {
+                alert("Access Denied. Admins only.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const navAuth = document.getElementById("nav-auth");
+            if (navAuth) {
+                navAuth.textContent = "Logout";
+                navAuth.href = "#";
+                navAuth.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    localStorage.clear();
+                    window.location.href = "home.html";
+                });
+            }
+
+            loadPublicStats();
+            loadAuditLogsFromDB(token);
+        });
+
+        async function loadPublicStats() {
+            try {
+                const res = await fetch("http://localhost:3000/api/public-stats");
+                if (!res.ok) throw new Error("Failed to fetch public stats");
+                const stats = await res.json();
+
+                const total = Number(stats.totalDonations || 0);
+                const td1 = document.getElementById("totalDonations");
+                const td2 = document.getElementById("activeCauses");
+                const td3 = document.getElementById("registeredUsers");
+
+                if (td1) td1.textContent = "PKR " + total.toLocaleString();
+                if (td2) td2.textContent = Number(stats.activeCauses || 0);
+                if (td3) td3.textContent = Number(stats.registeredUsers || 0);
+            } catch (err) {
+                console.error("Failed to load stats:", err);
+            }
+        }
+
+        async function loadAuditLogsFromDB(token) {
+            try {
+                const res = await fetch("http://localhost:3000/api/audit", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!res.ok) throw new Error("Failed to fetch audit logs");
+                const logs = await res.json();
+
+                const logBody = document.getElementById("log-body");
+                if (!logBody) return;
+
+                if (!logs.length) {
+                    logBody.innerHTML = "<tr><td colspan='2'>No recent admin actions.</td></tr>";
+                    return;
+                }
+
+                logBody.innerHTML = "";
+                logs.forEach((log) => {
+                    const ts = log.timestamp ? new Date(log.timestamp).toLocaleString() : "-";
+                    logBody.innerHTML += `<tr><td>${ts}</td><td>${log.actionDetails || "-"}</td></tr>`;
+                });
+            } catch (err) {
+                console.error("Failed to load audit logs:", err);
+                const logBody = document.getElementById("log-body");
+                if (logBody) logBody.innerHTML = "<tr><td colspan='2'>Failed to load logs.</td></tr>";
+            }
+        }
+    </script>
+
 </head>
+
 <body>
 
-<header>
-    <div class="logo">Smart Donation & NGO System</div>
-    <nav>
-        <a href="home.html" class="active">Causes</a>
-        <a href="dashboard.html">My Dashboard</a>
-        <a href="admin.html">Admin Panel</a>
-        <a href="reports.html">Reports</a>
-        <a href="login.html">Login / Register</a>
-        <a href="donate.html" class="donate-main-btn">Donate Now</a>
-    </nav>
-</header>
-<div class="container">
-    <h1>Current Donation Causes</h1>
+    <header>
+        <div class="logo">NGO Management System</div>
+        <nav id="navbar">
+            <a href="home.html">Home</a>
+            <a href="admin.html">Admin Panel</a>
+            <a href="reports.html" class="active">Reports/Logs </a>
+            <a href="#" id="logout-link">Logout</a>
+            <a href="donate.html" class="donate-main-btn">Donate Now</a>
+        </nav>
+    </header>
 
-    <div id="cause-container">
-        </div>
-</div>
+    <div class="reports-container">
+        <h1>System Reports & Logs</h1>
 
-        <h1>Organization Impact Dashboard</h1>
+        <section id="key-metrics" class="report-section">
 
-        <section class="dashboard-grid">
-            
-            <div class="stat-card blue">
-                <h3>Total Funds Raised</h3>
-                <p class="stat-number" id="total-funds-stat">PKR 45.2M</p>
-                <span class="stat-desc">SQL: <code>SUM(amount) FROM Donation</code></span>
-            </div>
+            <table class="data-table" style="width: 50%; margin-top: 25px;">
+                <tr>
+                    <th>Total Donations</th>
+                    <td id="totalDonations">PKR 0</td>
+                </tr>
+                <tr>
+                    <th>Active Causes</th>
+                    <td id="activeCauses">0</td>
+                </tr>
+                <tr>
+                    <th>Registered Users</th>
+                    <td id="registeredUsers">0</td>
+                </tr>
+            </table>
 
-            <div class="stat-card green">
-                <h3>Active Volunteers</h3>
-                <p class="stat-number" id="active-volunteers-stat">1,240</p>
-                <span class="stat-desc">SQL: <code>COUNT(*) FROM Volunteer</code></span>
-            </div>
-
-            <div class="stat-card orange">
-                <h3>Highest Donation</h3>
-                <p class="stat-number" id="highest-donation-stat">PKR 500,000</p>
-                <span class="stat-desc">SQL: <code>MAX(amount) FROM Donation</code></span>
-            </div>
-
-        </section>
-
-        <section class="report-panel">
-            <h2>System Audit Trail (AdminLogs)</h2>
-            <p>Records of critical administrative actions (e.g., Cause creation, user updates).</p>
-            
-            <div class="table-responsive">
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Log ID</th>
-                            <th>Timestamp</th>
-                            <th>Actor ID</th>
-                            <th>Action Performed</th>
-                        </tr>
-                    </thead>
-                    <tbody id="audit-log-body">
-                        </tbody>
-                </table>
-            </div>
-        </section>
-        
-        <section class="report-panel">
-            <h2> Donation Breakdown by Category</h2>
-            <p>Analysis of funds collected across different cause categories.</p>
-            <div class="table-responsive">
-                <table class="report-table">
-                    <thead>
-                        <tr>
-                            <th>Cause Category</th>
-                            <th>Transaction Count</th>
-                            <th>Total Amount</th>
-                            <th>Avg. Donation</th>
-                        </tr>
-                    </thead>
-                    <tbody id="category-breakdown-body">
-                        </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="report-panel">
-            <h2> Volunteer Assignments (Complex Join)</h2>
-            <p>Lists volunteers and the specific events they are assigned to.</p>
-            
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>Volunteer Name</th>
-                        <th>Skill Set</th>
-                        <th>Assigned Event</th>
-                        <th>Event Date</th>
-                    </tr>
-                </thead>
-                <tbody id="volunteer-assignments-body">
-                    </tbody>
             </table>
         </section>
 
-    </main>
-<script>
-    // ✅ Node.js API integration
+        <section id="audit-logs" class="report-section" style="margin-top: 50px;">
+            <h2>Admin Audit Logs</h2>
+            <div class="log-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="log-body">
+                        <tr>
+                            <td colspan="2">Loading admin logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-fetch("http://localhost:3000/api/causes")
-  .then(res => res.json())
-  .then(causes => {
+        <section id="volunteer-reports" class="report-section">
+            <h2>Volunteer Applications</h2>
+            <p>API integration later (baad me).</p>
+        </section>
+    </div>
 
-    const container = document.getElementById("cause-container");
-
-    causes.forEach(cause => {
-
-        const progress = Math.round(
-          (cause.collected / cause.goal) * 100
-        );
-
-        container.innerHTML += `
-          <div class="cause-card">
-              <h2 class="cause-title">${cause.title}</h2>
-              <p class="ngo-name">Managed by:
-                <b>${cause.ngo}</b>
-              </p>
-              <p class="description">${cause.description}</p>
-
-              <div class="progress-bar-container">
-                  <div class="progress-bar"
-                       style="width: ${progress}%\">
-                  </div>
-              </div>
-
-              <div class="stats">
-                  <p>Goal: <b>PKR ${cause.goal.toLocaleString()}</b></p>
-                  <p>Collected:
-                    <b>PKR ${cause.collected.toLocaleString()}
-                    (${progress}%)</b>
-                  </p>
-              </div>
-
-              <a href="donate.html?cause_id=${cause.id}"
-                 class="donate-btn">
-                 Donate Now
-              </a>
-          </div>
-        `;
-    });
-  })
-  .catch(err => {
-    console.error("Error fetching causes:", err);
-    const container = document.getElementById("cause-container");
-    container.innerHTML = `<p style="color: red;">Failed to load donation causes. Check server connection.</p>`;
-  });
-</script>
 </body>
+
 </html>
