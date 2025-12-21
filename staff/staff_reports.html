@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports - Staff Panel</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
+    header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .logo { font-size: 1.5em; font-weight: bold; }
+    nav a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s; font-size: 14px; }
+    nav a:hover, nav a.active { background-color: #2b7049; }
+    .donate-main-btn { background-color: #ff6347; color: white !important; font-weight: bold; }
+
+    .dashboard-layout { display: flex; min-height: calc(100vh - 80px); }
+    .sidebar { width: 290px; background-color: #fff; padding: 30px 20px; border-right: 1px solid #eee; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
+    .sidebar h2 { color: #1a5632; font-size: 1.05em; text-transform: uppercase; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px; }
+    .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+    .sidebar-menu li a { display:block; text-decoration:none; color:#555; padding:12px 18px; margin-bottom:8px; border-radius:8px; transition: all 0.3s; font-weight:600; }
+    .sidebar-menu li a:hover { background-color: #e0f2e0; color: #1a5632; }
+    .sidebar-menu li a.active-menu { background-color: #1a5632; color: white; }
+
+    .dashboard-content { flex-grow: 1; padding: 40px 60px; }
+    .dashboard-content h1 { margin-top: 0; color: #1a5632; }
+    .muted { color: #666; margin-top: 6px; }
+
+    .dashboard-section { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .dashboard-section h3 { color: #1a5632; margin-top: 0; margin-bottom: 18px; border-left: 5px solid #1a5632; padding-left: 15px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    @media (max-width: 980px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      header { padding: 15px 20px; }
+      .dashboard-content { padding: 30px 20px; }
+      .sidebar { width: 240px; }
+    }
+
+    .card { background:#f9f9f9; border:1px solid #eee; border-radius:10px; padding:16px; }
+    .card-title { font-weight:800; color:#1a5632; margin:0 0 6px; }
+    .card-meta { color:#666; font-size:13px; margin:0; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #eee; color: #666; font-size: 13px; }
+    td { padding: 14px 15px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: top; }
+
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; text-transform: uppercase; }
+    .pill-open { background:#e8f7ee; color:#1a5632; }
+    .pill-closed { background:#fbe9e7; color:#b23c2a; }
+
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color:#555; }
+    .danger-btn { background-color: #e74c3c; color: white; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .secondary-btn { background-color: #2b7049; color: white; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav id="top-nav">
+      <a href="/staff/staff-dashboard.html">Staff Dashboard</a>
+      <a href="/staff/staff_reports.html" class="active">Reports</a>
+      <a href="#" id="logout-link">Logout</a>
+      <a href="/donate.html" class="donate-main-btn">Donate Now</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>NGO Staff</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/staff/staff-dashboard.html">Overview</a></li>
+        <li><a href="/staff/events.html">events</a></li>
+        <li><a href="/staff/volunteers.html">volunteers</a></li>
+        <li><a href="/staff/causes.html">causes</a></li>
+        <li><a href="/staff/feedbacks.html">Feedback</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>Staff Reports</h1>
+      <p class="muted">Only NGO/staff data (localStorage demo): events, causes, assignments, feedback & logs.</p>
+
+      <section class="dashboard-section">
+        <h3>Key Stats</h3>
+        <div class="grid-3">
+          <div class="card">
+            <p class="card-title">events</p>
+            <p class="card-meta"><span id="stat-events">0</span> total • <span id="stat-active-events">0</span> active</p>
+          </div>
+          <div class="card">
+            <p class="card-title">causes</p>
+            <p class="card-meta"><span id="stat-causes">0</span> total • <span id="stat-active-causes">0</span> active</p>
+          </div>
+          <div class="card">
+            <p class="card-title">Assignments</p>
+            <p class="card-meta"><span id="stat-assignments">0</span> total</p>
+          </div>
+          <div class="card">
+            <p class="card-title">Feedback</p>
+            <p class="card-meta"><span id="stat-feedback-open">0</span> open • <span id="stat-feedback-resolved">0</span> resolved</p>
+          </div>
+          <div class="card">
+            <p class="card-title">Upcoming events</p>
+            <p class="card-meta"><span id="stat-upcoming">0</span> in next 14 days</p>
+          </div>
+          <div class="card">
+            <p class="card-title">Recent Activity</p>
+            <p class="card-meta"><span id="stat-logs">0</span> logs stored</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <h3>Recent Items</h3>
+        <div class="grid-2">
+          <div>
+            <h4 style="margin:0 0 10px; color:#1a5632;">Recent events</h4>
+            <table>
+              <thead><tr><th>Title</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody id="recent-events"><tr><td colspan="3">Loading…</td></tr></tbody>
+            </table>
+          </div>
+
+          <div>
+            <h4 style="margin:0 0 10px; color:#1a5632;">Recent causes</h4>
+            <table>
+              <thead><tr><th>Title</th><th>Goal</th><th>Status</th></tr></thead>
+              <tbody id="recent-causes"><tr><td colspan="3">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <h3>Activity Logs</h3>
+
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div>
+            <button class="secondary-btn" id="seed-logs">Seed 3 Demo Logs</button>
+          </div>
+          <div style="text-align:right;">
+            <button class="danger-btn" id="clear-logs">Clear Logs</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th style="width: 22%;">Time</th><th style="width: 18%;">User</th><th style="width: 18%;">Action</th><th>Details</th></tr>
+          </thead>
+          <tbody id="logs-body">
+            <tr><td colspan="4">Loading…</td></tr>
+          </tbody>
+        </table>
+
+        <p class="muted" style="margin-bottom:0;">
+          Tip: events/causes/Feedback pages can push logs using <span class="mono">staff_logs</span>.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function staffGuard() {
+      const token = localStorage.getItem("authToken");
+      const role  = (localStorage.getItem("userRole") || "").toLowerCase();
+      if (!token) { window.location.href = "/login.html"; return false; }
+      if (role === "admin") { window.location.href = "/admin.html"; return false; }
+      if (role !== "staff") { window.location.href = "/dashboard.html"; return false; }
+      return true;
+    }
+
+    function readLS(key, fallback) {
+      try {
+        const v = localStorage.getItem(key);
+        return v ? JSON.parse(v) : fallback;
+      } catch { return fallback; }
+    }
+    function writeLS(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+
+    function safeText(v) {
+      return (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+    }
+
+    function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+    function addStaffLog(action, details) {
+      const logs = readLS("staff_logs", []);
+      const userName = localStorage.getItem("userName") || "Staff";
+      logs.push({ id: uid(), ts: Date.now(), user: userName, action, details });
+      writeLS("staff_logs", logs.slice(-250));
+    }
+
+    function pillForStatus(status) {
+      const s = (status || "").toLowerCase();
+      if (s === "closed") return `<span class="pill pill-closed">CLOSED</span>`;
+      return `<span class="pill pill-open">${safeText(s || "open")}</span>`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!staffGuard()) return;
+
+      document.getElementById("logout-link").addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = "/home.html";
+      });
+
+      const events = readLS("events", []);
+      const causes = readLS("causes", []);
+      const assignments = readLS("staff_assignments", []);
+      const feedbacks = readLS("feedbacks", []);
+      const logs = readLS("staff_logs", []);
+
+      const activeevents = events.filter(e => (e.status || "open").toLowerCase() !== "closed");
+      const activecauses = causes.filter(c => (c.status || "active").toLowerCase() === "active");
+
+      const openFb = feedbacks.filter(f => (f.status || "open") === "open");
+      const resolvedFb = feedbacks.filter(f => (f.status || "") === "resolved");
+
+      const now = new Date();
+      const in14 = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+      const upcoming = events.filter(e => {
+        if (!e.date) return false;
+        const d = new Date(e.date);
+        return d >= now && d <= in14;
+      });
+
+      document.getElementById("stat-events").textContent = events.length;
+      document.getElementById("stat-active-events").textContent = activeevents.length;
+
+      document.getElementById("stat-causes").textContent = causes.length;
+      document.getElementById("stat-active-causes").textContent = activecauses.length;
+
+      document.getElementById("stat-assignments").textContent = assignments.length;
+
+      document.getElementById("stat-feedback-open").textContent = openFb.length;
+      document.getElementById("stat-feedback-resolved").textContent = resolvedFb.length;
+
+      document.getElementById("stat-upcoming").textContent = upcoming.length;
+      document.getElementById("stat-logs").textContent = logs.length;
+
+      // recent events
+      const evBody = document.getElementById("recent-events");
+      if (!events.length) {
+        evBody.innerHTML = `<tr><td colspan="3">No events yet.</td></tr>`;
+      } else {
+        evBody.innerHTML = "";
+        events.slice().reverse().slice(0, 6).forEach(ev => {
+          evBody.innerHTML += `
+            <tr>
+              <td><strong>${safeText(ev.title)}</strong></td>
+              <td>${safeText(ev.date || "-")}</td>
+              <td>${pillForStatus(ev.status || "open")}</td>
+            </tr>
+          `;
+        });
+      }
+
+      // recent causes
+      const causeBody = document.getElementById("recent-causes");
+      if (!causes.length) {
+        causeBody.innerHTML = `<tr><td colspan="3">No causes yet.</td></tr>`;
+      } else {
+        causeBody.innerHTML = "";
+        causes.slice().reverse().slice(0, 6).forEach(c => {
+          causeBody.innerHTML += `
+            <tr>
+              <td><strong>${safeText(c.title)}</strong></td>
+              <td>PKR ${Number(c.goal_amount || 0).toLocaleString()}</td>
+              <td>${pillForStatus(c.status || "active")}</td>
+            </tr>
+          `;
+        });
+      }
+
+      function renderLogs() {
+        const body = document.getElementById("logs-body");
+        const rows = readLS("staff_logs", []);
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="4">No logs yet.</td></tr>`;
+          return;
+        }
+        body.innerHTML = "";
+        rows.slice().reverse().slice(0, 60).forEach(l => {
+          body.innerHTML += `
+            <tr>
+              <td class="mono">${new Date(l.ts).toLocaleString()}</td>
+              <td>${safeText(l.user || "-")}</td>
+              <td class="mono">${safeText(l.action || "-")}</td>
+              <td>${safeText(l.details || "-")}</td>
+            </tr>
+          `;
+        });
+      }
+
+      document.getElementById("seed-logs").addEventListener("click", () => {
+        addStaffLog("open_reports", "Staff opened reports page");
+        addStaffLog("summary", "Viewed summary stats");
+        addStaffLog("hint", "Tip: log actions from events/causes/Feedback pages");
+        renderLogs();
+        document.getElementById("stat-logs").textContent = readLS("staff_logs", []).length;
+      });
+
+      document.getElementById("clear-logs").addEventListener("click", () => {
+        if (!confirm("Clear all staff logs?")) return;
+        writeLS("staff_logs", []);
+        renderLogs();
+        document.getElementById("stat-logs").textContent = 0;
+      });
+
+      renderLogs();
+    });
+  </script>
+</body>
+</html>

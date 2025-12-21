@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>volunteers - Staff Panel</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
+    header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .logo { font-size: 1.5em; font-weight: bold; }
+    nav a { color: white; text-decoration: none; margin-left: 20px; padding: 8px 15px; border-radius: 5px; transition: background-color 0.3s; font-size: 14px; }
+    nav a:hover, nav a.active { background-color: #2b7049; }
+    .donate-main-btn { background-color: #ff6347; color: white !important; font-weight: bold; }
+
+    .dashboard-layout { display: flex; min-height: calc(100vh - 80px); }
+    .sidebar { width: 290px; background-color: #fff; padding: 30px 20px; border-right: 1px solid #eee; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
+    .sidebar h2 { color: #1a5632; font-size: 1.05em; text-transform: uppercase; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; margin-bottom: 20px; }
+    .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+    .sidebar-menu li a { display:block; text-decoration:none; color:#555; padding:12px 18px; margin-bottom:8px; border-radius:8px; transition: all 0.3s; font-weight:600; }
+    .sidebar-menu li a:hover { background-color: #e0f2e0; color: #1a5632; }
+    .sidebar-menu li a.active-menu { background-color: #1a5632; color: white; }
+
+    .dashboard-content { flex-grow: 1; padding: 40px 60px; }
+    .dashboard-content h1 { margin-top: 0; color: #1a5632; }
+    .muted { color: #666; margin-top: 6px; }
+
+    .dashboard-section { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .dashboard-section h3 { color: #1a5632; margin-top: 0; margin-bottom: 18px; border-left: 5px solid #1a5632; padding-left: 15px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 980px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      header { padding: 15px 20px; }
+      .dashboard-content { padding: 30px 20px; }
+      .sidebar { width: 240px; }
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box;
+    }
+
+    .submit-btn { background-color: #1a5632; color: white; padding: 12px 22px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .danger-btn { background-color: #e74c3c; color: white; padding: 8px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #f8f9fa; text-align: left; padding: 15px; border-bottom: 2px solid #eee; color: #666; font-size: 13px; }
+    td { padding: 14px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+
+    .status-msg { margin-top: 12px; font-weight: 600; }
+    .status-ok { color: #1a7f37; }
+    .status-err { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav id="top-nav">
+      <a href="/staff/staff-dashboard.html">Staff Dashboard</a>
+      <a href="/staff/staff_reports.html">Reports</a>
+      <a href="#" id="logout-link">Logout</a>
+      <a href="/donate.html" class="donate-main-btn">Donate Now</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>NGO Staff</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/staff/staff-dashboard.html">Overview</a></li>
+        <li><a href="/staff/events.html">events</a></li>
+        <li><a class="active-menu" href="/staff/volunteers.html">volunteers</a></li>
+        <li><a href="/staff/causes.html">causes</a></li>
+        <li><a href="/staff/feedbacks.html">Feedback</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>volunteers</h1>
+      <p class="muted">Assign volunteers to events (localStorage demo).</p>
+
+      <section class="dashboard-section">
+        <h3>Assign Volunteer to Event</h3>
+        <form id="assign-form">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Select Event</label>
+              <select id="event-select" required></select>
+            </div>
+            <div class="form-group">
+              <label>Select Volunteer</label>
+              <select id="vol-select" required></select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Task / Role</label>
+              <input id="task" required placeholder="e.g., Registration, Logistics" />
+            </div>
+            <div class="form-group">
+              <label>Shift</label>
+              <input id="shift" placeholder="e.g., 10am - 2pm" />
+            </div>
+          </div>
+
+          <button class="submit-btn" type="submit">Assign</button>
+          <span id="assign-msg" class="status-msg"></span>
+        </form>
+      </section>
+
+      <section class="dashboard-section">
+        <h3>Assignments</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Volunteer</th><th>Event</th><th>Task</th><th>Shift</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="assignments-body">
+            <tr><td colspan="5">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Logout should always attach (don't place it after early returns)
+  const logout = document.getElementById("logout-link");
+  if (logout) {
+    logout.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "/home.html";
+    });
+  }
+
+  // ✅ ROLE REDIRECT (use in every page)
+  const token = localStorage.getItem("authToken");
+  const role  = (localStorage.getItem("userRole") || "").toLowerCase();
+
+  if (!token) { window.location.href = "/login.html"; return; }
+
+  if (role === "admin") {
+    if (!location.pathname.endsWith("admin.html")) window.location.href = "/admin.html";
+    return;
+  }
+
+  if (role === "staff") {
+    const staffAllowed = [
+      "/staff/staff-dashboard.html",
+      "/staff/events.html",
+      "/staff/volunteers.html",
+      "/staff/causes.html",
+      "/staff/staff_reports.html",
+      "/staff/feedbacks.html"
+    ];
+    const ok = staffAllowed.some(p => location.pathname.endsWith(p));
+    if (!ok) { window.location.href = "/staff/staff-dashboard.html"; return; }
+    // ✅ DO NOT return here — staff should continue running the page JS
+  } else {
+    // non-staff non-admin => normal user
+    if (!location.pathname.endsWith("dashboard.html")) { window.location.href = "/dashboard.html"; return; }
+  }
+
+  // helpers
+  const readLS = (k, fb) => { try { return JSON.parse(localStorage.getItem(k) || ""); } catch { return fb; } };
+  const writeLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+  const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const setMsg = (el, ok, text) => {
+    el.textContent = text;
+    el.className = "status-msg " + (ok ? "status-ok" : "status-err");
+    setTimeout(() => el.textContent = "", 2200);
+  };
+
+  // demo volunteer list (you can replace with DB later)
+  const demoVols = [
+    { id: "v1", name: "Ali Raza", skill: "First Aid" },
+    { id: "v2", name: "Ayesha Khan", skill: "Coordination" },
+    { id: "v3", name: "Usman Tariq", skill: "Logistics" }
+  ];
+  if (!localStorage.getItem("staff_volunteers")) writeLS("staff_volunteers", demoVols);
+
+  const eventselect = document.getElementById("event-select");
+  const volSelect = document.getElementById("vol-select");
+  const tbody = document.getElementById("assignments-body");
+  const msg = document.getElementById("assign-msg");
+
+  function fillDropdowns() {
+    const events = readLS("staff_events", []);
+    const vols = readLS("staff_volunteers", []);
+
+    eventselect.innerHTML = "";
+    if (!events.length) {
+      eventselect.innerHTML = `<option value="">No events (Add from events page)</option>`;
+    } else {
+      eventselect.innerHTML = `<option value="">Select Event</option>`;
+      events.forEach(ev => {
+        eventselect.innerHTML += `<option value="${safeText(ev.id)}">${safeText(ev.title)} (${safeText(ev.date)})</option>`;
+      });
+    }
+
+    volSelect.innerHTML = `<option value="">Select Volunteer</option>`;
+    vols.forEach(v => {
+      volSelect.innerHTML += `<option value="${safeText(v.id)}">${safeText(v.name)} (${safeText(v.skill)})</option>`;
+    });
+  }
+
+  function loadAssignments() {
+    const rows = readLS("staff_assignments", []);
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="5">No assignments yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = "";
+    rows.slice().reverse().forEach(a => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${safeText(a.volunteer_name)}</td>
+          <td>${safeText(a.event_title)}</td>
+          <td>${safeText(a.task)}</td>
+          <td>${safeText(a.shift || "-")}</td>
+          <td><button class="danger-btn" data-del="${safeText(a.id)}">Remove</button></td>
+        </tr>
+      `;
+    });
+
+    tbody.querySelectorAll("button[data-del]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-del");
+        if (!confirm("Remove this assignment?")) return;
+        const updated = readLS("staff_assignments", []).filter(x => x.id !== id);
+        writeLS("staff_assignments", updated);
+        loadAssignments();
+      });
+    });
+  }
+
+  document.getElementById("assign-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const evId = eventselect.value;
+    const vId = volSelect.value;
+
+    const events = readLS("staff_events", []);
+    const vols = readLS("staff_volunteers", []);
+    const ev = events.find(x => x.id === evId);
+    const v = vols.find(x => x.id === vId);
+
+    if (!ev) { setMsg(msg, false, "Please create/select an event first."); return; }
+    if (!v) { setMsg(msg, false, "Please select a volunteer."); return; }
+
+    const row = {
+      id: uid(),
+      event_id: ev.id,
+      event_title: ev.title,
+      volunteer_id: v.id,
+      volunteer_name: v.name,
+      task: document.getElementById("task").value.trim(),
+      shift: document.getElementById("shift").value.trim()
+    };
+
+    const rows = readLS("staff_assignments", []);
+    rows.push(row);
+    writeLS("staff_assignments", rows);
+
+    setMsg(msg, true, "Volunteer assigned!");
+    e.target.reset();
+    fillDropdowns();
+    loadAssignments();
+  });
+
+  fillDropdowns();
+  loadAssignments();
+});
+</script>
+
+</body>
+</html>
