@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Donations - NGO System</title>
+  <link rel="stylesheet" href="/assets/css/shell.css" />
+  <style>
+    table{width:100%;border-collapse:collapse}
+    th{background:#f8f9fa;text-align:left;padding:15px;border-bottom:2px solid #eee;color:#666;font-size:13px}
+    td{padding:14px 15px;border-bottom:1px solid #eee;font-size:14px}
+    input{padding:8px 10px;border-radius:10px;border:1px solid #ddd;width:100%}
+    .row{display:grid;grid-template-columns:1fr 180px 180px;gap:12px;align-items:end}
+    button{border:none;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}
+    .btn{background:var(--green);color:#fff}
+    .danger{background:#b00020;color:#fff}
+    .muted-sm{color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/admin/admin.html">Admin Dashboard</a>
+      <a href="/admin/admin_reports.html">Reports</a>
+      <!-- ✅ new navbar link (requested) -->
+      <a href="/admin/volunteers.html">Volunteers</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Admin</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/admin.html">Overview</a></li>
+        <li><a href="/admin/admin_events.html">Approve Events</a></li>
+        <li><a href="/admin/admin_causes.html">Approve Causes</a></li>
+        <li><a href="/admin/donations.html" class="active-menu">Donations</a></li>
+        <!-- ✅ new sidebar link (requested) -->
+        <li><a href="/admin/feedbacks.html">Feedback</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>Donations</h1>
+      <p class="muted">Search, update, or delete donations (admin-only).</p>
+
+      <section class="section">
+        <h3>Search</h3>
+        <div class="row">
+          <div>
+            <label class="muted-sm">Search by donor email / donor name / cause title</label>
+            <input id="q" placeholder="e.g. ali@example.com or Food" />
+          </div>
+          <button class="btn" id="btn-search">Search</button>
+          <button class="danger" id="btn-reset">Reset</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3>Results</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Date</th><th>Donor</th><th>Email</th><th>Cause</th><th>Amount</th><th style="width:220px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="7">Loading...</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    if(!window.auth.requireRole('admin')) { /* redirected */ }
+
+    const tbody = document.getElementById('rows');
+
+    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+    function fmtDate(v){
+      if(!v) return '-';
+      const d = new Date(v);
+      return Number.isNaN(d.getTime()) ? safeText(v) : d.toLocaleString();
+    }
+
+    function rowHTML(d){
+      const id = d.donation_id ?? d.id;
+      return `
+        <tr data-id="${safeText(id)}">
+          <td>${safeText(id)}</td>
+          <td>${fmtDate(d.donation_date)}</td>
+          <td>${safeText(d.donor_name || '')}</td>
+          <td>${safeText(d.donor_email || '')}</td>
+          <td>${safeText(d.cause_title || '')}</td>
+          <td><input type="number" min="1" step="0.01" value="${safeText(d.amount)}" /></td>
+          <td>
+            <button class="btn" data-act="save">Save</button>
+            <button class="danger" data-act="del">Delete</button>
+          </td>
+        </tr>`;
+    }
+
+    async function load(){
+      const q = document.getElementById('q').value.trim();
+      const url = q ? `/api/admin/donations?search=${encodeURIComponent(q)}` : '/api/admin/donations';
+      tbody.innerHTML = '<tr><td colspan="7">Loading...</td></tr>';
+
+      const res = await fetch(url, { headers: window.auth.headers() });
+      const data = await res.json().catch(()=>[]);
+      if(!res.ok){
+        tbody.innerHTML = `<tr><td colspan="7">${safeText(data.message || 'Failed to load donations')}</td></tr>`;
+        return;
+      }
+
+      if(!Array.isArray(data) || !data.length){
+        tbody.innerHTML = '<tr><td colspan="7">No donations found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(rowHTML).join('');
+    }
+
+    document.getElementById('btn-search').addEventListener('click', load);
+    document.getElementById('btn-reset').addEventListener('click', ()=>{
+      document.getElementById('q').value='';
+      load();
+    });
+
+    tbody.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+
+      const tr = e.target.closest('tr');
+      const id = tr.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+
+      if(act === 'save'){
+        const amountRaw = tr.querySelector('input').value;
+        const amount = Number(amountRaw);
+
+        if(!amountRaw || Number.isNaN(amount) || amount <= 0){
+          return alert('Enter a valid amount (> 0).');
+        }
+
+        const res = await fetch(`/api/admin/donations/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', ...window.auth.headers() },
+          body: JSON.stringify({ amount })
+        });
+
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok) return alert(data.message || 'Update failed');
+        alert('Donation updated');
+        load();
+      }
+
+      if(act === 'del'){
+        if(!confirm('Delete this donation?')) return;
+
+        const res = await fetch(`/api/admin/donations/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: window.auth.headers()
+        });
+
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok) return alert(data.message || 'Delete failed');
+        alert('Donation deleted');
+        load();
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>

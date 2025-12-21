@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add NGO - Smart NGO System</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f7f6;margin:0;color:#333}
+    header{background:#1a5632;color:#fff;padding:15px 50px;display:flex;justify-content:space-between;align-items:center}
+    header .logo{font-weight:700;font-size:20px}
+    header nav a{color:#fff;text-decoration:none;margin-left:20px}
+    .wrap{max-width:900px;margin:40px auto;padding:0 16px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.08);padding:22px}
+    h1{margin:0 0 10px;color:#1a5632}
+    p.helper{margin:0 0 18px;color:#666}
+    label{display:block;margin:12px 0 6px;font-weight:600}
+    input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px}
+    textarea{min-height:90px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    button{background:#1a5632;color:#fff;border:none;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer;margin-top:14px}
+    button:hover{background:#134226}
+    .note{background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:10px 12px;border-radius:10px;margin-bottom:14px}
+    .status{margin-top:10px;font-weight:700}
+    .status.ok{color:#1a5632}
+    .status.err{color:#b00020}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/home.html">Home</a>
+      <a href="/login.html">Login</a>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <h1>Register your NGO</h1>
+      <p class="helper">Staff accounts must attach one NGO. After saving, you will be redirected to the login page.</p>
+
+      <form id="ngo-form">
+        <label for="ngo-name">NGO Name</label>
+        <input id="ngo-name" required placeholder="e.g., Helping Hands Foundation"/>
+
+        <label for="ngo-desc">Description</label>
+        <textarea id="ngo-desc" required placeholder="Short description of the NGO's mission"></textarea>
+
+        <div class="row">
+          <div>
+            <label for="ngo-phone">Phone</label>
+            <input id="ngo-phone" placeholder="+92 3xx xxxxxxx"/>
+          </div>
+          <div>
+            <label for="ngo-city">City</label>
+            <input id="ngo-city" placeholder="Karachi"/>
+          </div>
+        </div>
+
+        <button type="submit">Save NGO & Go to Login</button>
+        <div id="status" class="status"></div>
+      </form>
+    </div>
+  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("authToken");
+  const role  = (localStorage.getItem("userRole") || "").toLowerCase();
+
+  // staff must be logged in
+  if (!token) { window.location.href = "/login.html"; return; }
+  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return; }
+  if (role !== "staff") { window.location.href = "/dashboard.html"; return; }
+
+  const statusEl = document.getElementById("status");
+  function setStatus(ok, msg){
+    statusEl.textContent = msg;
+    statusEl.className = "status " + (ok ? "ok" : "err");
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        ...(options.headers || {})
+      }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Request failed");
+    return data;
+  }
+
+  document.getElementById("ngo-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        name: document.getElementById("ngo-name").value.trim(),
+        description: document.getElementById("ngo-desc").value.trim(),
+        phone: document.getElementById("ngo-phone").value.trim() || null,
+        city: document.getElementById("ngo-city").value.trim() || null
+      };
+
+      await api("/api/staff/ngos", { method: "POST", body: JSON.stringify(payload) });
+
+      setStatus(true, "NGO saved and assigned. Redirecting to staff dashboard...");
+      setTimeout(() => window.location.href = "/staff/staff-dashboard.html", 700);
+    } catch (err) {
+      setStatus(false, err.message);
+    }
+  });
+});
+</script>
+
+</body>
+</html>

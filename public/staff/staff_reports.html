@@ -160,156 +160,216 @@
   </div>
 
   <script>
-    function staffGuard() {
-      const token = localStorage.getItem("authToken");
-      const role  = (localStorage.getItem("userRole") || "").toLowerCase();
-      if (!token) { window.location.href = "/login.html"; return false; }
-      if (role === "admin") { window.location.href = "/admin.html"; return false; }
-      if (role !== "staff") { window.location.href = "/dashboard.html"; return false; }
-      return true;
+function staffGuard() {
+  const token = localStorage.getItem("authToken");
+  const role  = (localStorage.getItem("userRole") || "").toLowerCase();
+  if (!token) { window.location.href = "/login.html"; return false; }
+  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return false; }
+  if (role !== "staff") { window.location.href = "/dashboard.html"; return false; }
+  return true;
+}
+
+function readLS(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch { return fallback; }
+}
+function writeLS(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+
+function safeText(v) {
+  return (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+}
+
+function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+function addStaffLog(action, details) {
+  const logs = readLS("staff_logs", []);
+  const userName = localStorage.getItem("userName") || "Staff";
+  logs.push({ id: uid(), ts: Date.now(), user: userName, action, details });
+  writeLS("staff_logs", logs.slice(-250));
+}
+
+function pillForStatus(status) {
+  const s = (status || "").toLowerCase();
+  // for DB model:
+  // Event/Cause statuses: pending/approved/rejected
+  if (s === "approved") return `<span class="pill pill-open">APPROVED</span>`;
+  if (s === "rejected") return `<span class="pill pill-closed">REJECTED</span>`;
+  return `<span class="pill pill-closed">${safeText(s || "pending")}</span>`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (!staffGuard()) return;
+
+  const token = localStorage.getItem("authToken");
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        ...(options.headers || {})
+      }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Request failed");
+    return data;
+  }
+
+  const logout = document.getElementById("logout-link");
+  if (logout) {
+    logout.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "/home.html";
+    });
+  }
+
+  // DOM refs
+  const evBody = document.getElementById("recent-events");
+  const causeBody = document.getElementById("recent-causes");
+
+  function renderLogs() {
+    const body = document.getElementById("logs-body");
+    const rows = readLS("staff_logs", []);
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="4">No logs yet.</td></tr>`;
+      return;
     }
+    body.innerHTML = "";
+    rows.slice().reverse().slice(0, 60).forEach(l => {
+      body.innerHTML += `
+        <tr>
+          <td class="mono">${safeText(new Date(l.ts).toLocaleString())}</td>
+          <td>${safeText(l.user || "-")}</td>
+          <td class="mono">${safeText(l.action || "-")}</td>
+          <td>${safeText(l.details || "-")}</td>
+        </tr>
+      `;
+    });
+  }
 
-    function readLS(key, fallback) {
-      try {
-        const v = localStorage.getItem(key);
-        return v ? JSON.parse(v) : fallback;
-      } catch { return fallback; }
-    }
-    function writeLS(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+  document.getElementById("seed-logs")?.addEventListener("click", () => {
+    addStaffLog("open_reports", "Staff opened reports page");
+    addStaffLog("summary", "Viewed summary stats");
+    addStaffLog("hint", "Tip: keep logs local or add DB table later");
+    renderLogs();
+    document.getElementById("stat-logs").textContent = readLS("staff_logs", []).length;
+  });
 
-    function safeText(v) {
-      return (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-    }
+  document.getElementById("clear-logs")?.addEventListener("click", () => {
+    if (!confirm("Clear all staff logs?")) return;
+    writeLS("staff_logs", []);
+    renderLogs();
+    document.getElementById("stat-logs").textContent = 0;
+  });
 
-    function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+  (async () => {
+    try {
+      // ensure staff NGO assigned
+      await api("/api/staff/me");
 
-    function addStaffLog(action, details) {
-      const logs = readLS("staff_logs", []);
-      const userName = localStorage.getItem("userName") || "Staff";
-      logs.push({ id: uid(), ts: Date.now(), user: userName, action, details });
-      writeLS("staff_logs", logs.slice(-250));
-    }
+      const [events, causes, feedbacks] = await Promise.all([
+        api("/api/staff/events"),
+        api("/api/staff/causes"),
+        api("/api/staff/feedbacks")
+      ]);
 
-    function pillForStatus(status) {
-      const s = (status || "").toLowerCase();
-      if (s === "closed") return `<span class="pill pill-closed">CLOSED</span>`;
-      return `<span class="pill pill-open">${safeText(s || "open")}</span>`;
-    }
+      // Events stats: "active" = approved upcoming or not-ended
+      const activeEvents = (events || []).filter(e => (e.status || "pending").toLowerCase() === "approved");
+      const totalEvents = (events || []).length;
 
-    document.addEventListener("DOMContentLoaded", () => {
-      if (!staffGuard()) return;
+      // Causes stats: active = approved (public shows only approved anyway)
+      const activeCauses = (causes || []).filter(c => (c.status || "pending").toLowerCase() === "approved");
+      const totalCauses = (causes || []).length;
 
-      document.getElementById("logout-link").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.clear();
-        window.location.href = "/home.html";
-      });
+      // Feedback stats: your DB doesn't have feedback.status, so open/resolved not supported.
+      // We'll treat all feedback as "open" for now.
+      const openFb = (feedbacks || []).length;
+      const resolvedFb = 0;
 
-      const events = readLS("events", []);
-      const causes = readLS("causes", []);
-      const assignments = readLS("staff_assignments", []);
-      const feedbacks = readLS("feedbacks", []);
-      const logs = readLS("staff_logs", []);
-
-      const activeevents = events.filter(e => (e.status || "open").toLowerCase() !== "closed");
-      const activecauses = causes.filter(c => (c.status || "active").toLowerCase() === "active");
-
-      const openFb = feedbacks.filter(f => (f.status || "open") === "open");
-      const resolvedFb = feedbacks.filter(f => (f.status || "") === "resolved");
-
+      // Upcoming within 14 days (approved only)
       const now = new Date();
       const in14 = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
-      const upcoming = events.filter(e => {
-        if (!e.date) return false;
-        const d = new Date(e.date);
-        return d >= now && d <= in14;
+      const upcoming = (events || []).filter(e => {
+        if (!e.start_datetime) return false;
+        const d = new Date(e.start_datetime);
+        const approved = (e.status || "pending").toLowerCase() === "approved";
+        return approved && d >= now && d <= in14;
       });
 
-      document.getElementById("stat-events").textContent = events.length;
-      document.getElementById("stat-active-events").textContent = activeevents.length;
+      // Set stats
+      document.getElementById("stat-events").textContent = totalEvents;
+      document.getElementById("stat-active-events").textContent = activeEvents.length;
 
-      document.getElementById("stat-causes").textContent = causes.length;
-      document.getElementById("stat-active-causes").textContent = activecauses.length;
+      document.getElementById("stat-causes").textContent = totalCauses;
+      document.getElementById("stat-active-causes").textContent = activeCauses.length;
 
-      document.getElementById("stat-assignments").textContent = assignments.length;
+      // assignments not implemented in DB
+      document.getElementById("stat-assignments").textContent = "0";
 
-      document.getElementById("stat-feedback-open").textContent = openFb.length;
-      document.getElementById("stat-feedback-resolved").textContent = resolvedFb.length;
+      document.getElementById("stat-feedback-open").textContent = openFb;
+      document.getElementById("stat-feedback-resolved").textContent = resolvedFb;
 
       document.getElementById("stat-upcoming").textContent = upcoming.length;
+
+      const logs = readLS("staff_logs", []);
       document.getElementById("stat-logs").textContent = logs.length;
 
       // recent events
-      const evBody = document.getElementById("recent-events");
-      if (!events.length) {
+      if (!totalEvents) {
         evBody.innerHTML = `<tr><td colspan="3">No events yet.</td></tr>`;
       } else {
         evBody.innerHTML = "";
-        events.slice().reverse().slice(0, 6).forEach(ev => {
+        (events || []).slice().reverse().slice(0, 6).forEach(ev => {
           evBody.innerHTML += `
             <tr>
               <td><strong>${safeText(ev.title)}</strong></td>
-              <td>${safeText(ev.date || "-")}</td>
-              <td>${pillForStatus(ev.status || "open")}</td>
+              <td>${safeText(ev.start_datetime || "-")}</td>
+              <td>${pillForStatus(ev.status || "pending")}</td>
             </tr>
           `;
         });
       }
 
       // recent causes
-      const causeBody = document.getElementById("recent-causes");
-      if (!causes.length) {
+      if (!totalCauses) {
         causeBody.innerHTML = `<tr><td colspan="3">No causes yet.</td></tr>`;
       } else {
         causeBody.innerHTML = "";
-        causes.slice().reverse().slice(0, 6).forEach(c => {
+        (causes || []).slice().reverse().slice(0, 6).forEach(c => {
           causeBody.innerHTML += `
             <tr>
               <td><strong>${safeText(c.title)}</strong></td>
               <td>PKR ${Number(c.goal_amount || 0).toLocaleString()}</td>
-              <td>${pillForStatus(c.status || "active")}</td>
+              <td>${pillForStatus(c.status || "pending")}</td>
             </tr>
           `;
         });
       }
-
-      function renderLogs() {
-        const body = document.getElementById("logs-body");
-        const rows = readLS("staff_logs", []);
-        if (!rows.length) {
-          body.innerHTML = `<tr><td colspan="4">No logs yet.</td></tr>`;
-          return;
-        }
-        body.innerHTML = "";
-        rows.slice().reverse().slice(0, 60).forEach(l => {
-          body.innerHTML += `
-            <tr>
-              <td class="mono">${new Date(l.ts).toLocaleString()}</td>
-              <td>${safeText(l.user || "-")}</td>
-              <td class="mono">${safeText(l.action || "-")}</td>
-              <td>${safeText(l.details || "-")}</td>
-            </tr>
-          `;
-        });
-      }
-
-      document.getElementById("seed-logs").addEventListener("click", () => {
-        addStaffLog("open_reports", "Staff opened reports page");
-        addStaffLog("summary", "Viewed summary stats");
-        addStaffLog("hint", "Tip: log actions from events/causes/Feedback pages");
-        renderLogs();
-        document.getElementById("stat-logs").textContent = readLS("staff_logs", []).length;
-      });
-
-      document.getElementById("clear-logs").addEventListener("click", () => {
-        if (!confirm("Clear all staff logs?")) return;
-        writeLS("staff_logs", []);
-        renderLogs();
-        document.getElementById("stat-logs").textContent = 0;
-      });
 
       renderLogs();
-    });
-  </script>
+    } catch (err) {
+      // minimal failure UI
+      document.getElementById("stat-events").textContent = "-";
+      document.getElementById("stat-active-events").textContent = "-";
+      document.getElementById("stat-causes").textContent = "-";
+      document.getElementById("stat-active-causes").textContent = "-";
+      document.getElementById("stat-assignments").textContent = "-";
+      document.getElementById("stat-feedback-open").textContent = "-";
+      document.getElementById("stat-feedback-resolved").textContent = "-";
+      document.getElementById("stat-upcoming").textContent = "-";
+      document.getElementById("stat-logs").textContent = readLS("staff_logs", []).length;
+
+      if (evBody) evBody.innerHTML = `<tr><td colspan="3">${safeText(err.message)}</td></tr>`;
+      if (causeBody) causeBody.innerHTML = `<tr><td colspan="3">-</td></tr>`;
+      renderLogs();
+    }
+  })();
+});
+</script>
+
 </body>
 </html>

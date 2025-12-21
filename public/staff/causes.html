@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Causes - Staff Panel</title>
+  <title>causes - Staff Panel</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
     header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -57,10 +57,10 @@
   <header>
     <div class="logo">NGO Management System</div>
     <nav id="top-nav">
-      <a href="staff-dashboard.html">Staff Dashboard</a>
-      <a href="staff_reports.html">Reports</a>
+      <a href="/staff/staff-dashboard.html">Staff Dashboard</a>
+      <a href="/staff/staff_reports.html">Reports</a>
       <a href="#" id="logout-link">Logout</a>
-      <a href="donate.html" class="donate-main-btn">Donate Now</a>
+      <a href="/staff/donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
   </header>
 
@@ -68,16 +68,16 @@
     <aside class="sidebar">
       <h2>NGO Staff</h2>
       <ul class="sidebar-menu">
-        <li><a  href="staff-dashboard.html">Overview</a></li>
-        <li><a href="events.html">Events</a></li>
-        <li><a href="volunteers.html">Volunteers</a></li>
-        <li><a href="causes.html" class="active-menu">Causes</a></li>
-        <li><a href="feedbacks.html">Feedback</a></li>
+        <li><a  href="/staff/staff-dashboard.html">Overview</a></li>
+        <li><a href="/staff/events.html">events</a></li>
+        <li><a href="/staff/volunteers.html">volunteers</a></li>
+        <li><a href="/staff/causes.html" class="active-menu">causes</a></li>
+        <li><a href="/staff/feedbacks.html">Feedback</a></li>
       </ul>
     </aside>
 
     <main class="dashboard-content">
-      <h1>Causes</h1>
+      <h1>causes</h1>
       <p class="muted">Create donation causes (localStorage demo).</p>
 
       <section class="dashboard-section">
@@ -120,7 +120,7 @@
       </section>
 
       <section class="dashboard-section">
-        <h3>All Causes</h3>
+        <h3>All causes</h3>
         <table>
           <thead>
             <tr>
@@ -135,101 +135,124 @@
     </main>
   </div>
 
-  <script>
-    function staffGuard() {
-      const token = localStorage.getItem("authToken");
-      const role  = (localStorage.getItem("userRole") || "").toLowerCase();
-      if (!token) { window.location.href = "login.html"; return false; }
-      if (role === "admin") { window.location.href = "admin.html"; return false; }
-      if (role !== "staff") { window.location.href = "dashboard.html"; return false; }
-      return true;
-    }
 
-    function readLS(key, fallback) {
-      try {
-        const v = localStorage.getItem(key);
-        return v ? JSON.parse(v) : fallback;
-      } catch { return fallback; }
-    }
-    function writeLS(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+ <script>
+function staffGuard() {
+  const token = localStorage.getItem("authToken");
+  const role  = (localStorage.getItem("userRole") || "").toLowerCase();
+  if (!token) { window.location.href = "/login.html"; return false; }
+  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return false; }
+  if (role !== "staff") { window.location.href = "/dashboard.html"; return false; }
+  return true;
+}
 
-    function safeText(v) {
-      return (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  if (!staffGuard()) return;
 
-    function setMsg(el, ok, text) {
-      el.textContent = text;
-      el.className = "status-msg " + (ok ? "status-ok" : "status-err");
-      setTimeout(() => el.textContent = "", 2200);
-    }
+  const token = localStorage.getItem("authToken");
 
-    function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+  const tbody = document.getElementById("causes-body");
+  const msg   = document.getElementById("cause-msg");
 
-    document.addEventListener("DOMContentLoaded", () => {
-      if (!staffGuard()) return;
+  const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const setMsg = (ok, text) => {
+    if (!msg) return;
+    msg.textContent = text;
+    msg.className = "status-msg " + (ok ? "status-ok" : "status-err");
+    setTimeout(() => msg.textContent = "", 2200);
+  };
 
-      document.getElementById("logout-link").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.clear();
-        window.location.href = "home.html";
-      });
-
-      const tbody = document.getElementById("causes-body");
-      const msg = document.getElementById("cause-msg");
-
-      function loadCauses() {
-        const causes = readLS("staff_causes", []);
-        if (!causes.length) {
-          tbody.innerHTML = `<tr><td colspan="5">No causes yet.</td></tr>`;
-          return;
-        }
-        tbody.innerHTML = "";
-        causes.slice().reverse().forEach(c => {
-          tbody.innerHTML += `
-            <tr>
-              <td><strong>${safeText(c.title)}</strong></td>
-              <td>PKR ${Number(c.goal_amount || 0).toLocaleString()}</td>
-              <td>${safeText(c.status)}</td>
-              <td>${safeText(c.category || "-")}</td>
-              <td><button class="danger-btn" data-del="${safeText(c.id)}">Delete</button></td>
-            </tr>
-          `;
-        });
-
-        tbody.querySelectorAll("button[data-del]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const id = btn.getAttribute("data-del");
-            if (!confirm("Delete this cause?")) return;
-            const updated = readLS("staff_causes", []).filter(x => x.id !== id);
-            writeLS("staff_causes", updated);
-            loadCauses();
-          });
-        });
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        ...(options.headers || {})
       }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Request failed");
+    return data;
+  }
 
-      document.getElementById("cause-form").addEventListener("submit", (e) => {
-        e.preventDefault();
+  function render(rows) {
+    if (!rows || !rows.length) {
+      tbody.innerHTML = `<tr><td colspan="5">No causes yet.</td></tr>`;
+      return;
+    }
 
-        const cause = {
-          id: uid(),
+    tbody.innerHTML = rows.map(c => {
+      const status = (c.status || "pending").toLowerCase();
+      return `
+        <tr>
+          <td><strong>${safeText(c.title)}</strong></td>
+          <td>PKR ${Number(c.goal_amount || 0).toLocaleString()}</td>
+          <td>${safeText(status)}</td>
+          <td>${safeText(c.category || "-")}</td>
+          <td>-</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  async function loadStaffCtx() {
+    // ✅ this ensures staff is assigned to an NGO in DB
+    // returns { staff_id, ngo: { ngo_id, name } }
+    await api("/api/staff/me");
+  }
+
+  async function loadCauses() {
+    const rows = await api("/api/staff/causes");
+    render(rows);
+  }
+
+  // logout
+  const logout = document.getElementById("logout-link");
+  if (logout) {
+    logout.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "/home.html";
+    });
+  }
+
+  // create cause (pending)
+  const form = document.getElementById("cause-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      await api("/api/staff/causes", {
+        method: "POST",
+        body: JSON.stringify({
           title: document.getElementById("cause-title").value.trim(),
-          description: document.getElementById("cause-desc").value.trim(),
+          description: document.getElementById("cause-desc").value.trim() || null,
           goal_amount: Number(document.getElementById("cause-goal").value),
-          status: document.getElementById("cause-status").value,
-          category: document.getElementById("cause-category").value.trim()
-        };
-
-        const causes = readLS("staff_causes", []);
-        causes.push(cause);
-        writeLS("staff_causes", causes);
-
-        setMsg(msg, true, "Cause created!");
-        e.target.reset();
-        loadCauses();
+          category: document.getElementById("cause-category").value.trim() || null,
+          start_date: null,
+          end_date: null
+        })
       });
 
-      loadCauses();
-    });
-  </script>
+      setMsg(true, "Cause submitted (pending approval).");
+      e.target.reset();
+      await loadCauses();
+    } catch (err) {
+      setMsg(false, err.message);
+    }
+  });
+
+  (async () => {
+    try {
+      await loadStaffCtx();
+      await loadCauses();
+    } catch (err) {
+      render([]);
+      setMsg(false, err.message);
+    }
+  })();
+});
+</script>
+
 </body>
 </html>

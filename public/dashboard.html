@@ -179,10 +179,10 @@
   <header>
     <div class="logo">NGO Management System</div>
     <nav id="top-nav">
-      <a href="home.html">Home</a>
-      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="/home.html">Home</a>
+      <a href="/dashboard.html" class="active">Dashboard</a>
       <a href="#" id="logout-link">Logout</a>
-      <a href="donate.html" class="donate-main-btn">Donate Now</a>
+      <a href="/donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
   </header>
 
@@ -291,21 +291,21 @@
       const role = localStorage.getItem("userRole");
       const userName = localStorage.getItem("userName") || "User";
 
-      if (!token) { window.location.href = "login.html"; return; }
+      if (!token) { window.location.href = "/login.html"; return; }
 
       // ✅ admin goes to admin panel
       if (role === "admin") {
-        window.location.href = "admin.html";
+        window.location.href = "/admin/admin-dashboard.html";
         return;
       }
 
-      // donor/volunteer allowed
+      // user/volunteer allowed
       document.getElementById('welcome-msg').textContent = `Welcome back, ${userName}!`;
 
       document.getElementById("logout-link").addEventListener("click", (e) => {
         e.preventDefault();
         localStorage.clear();
-        window.location.href = "home.html";
+        window.location.href = "/home.html";
       });
 
       const authHeaders = {
@@ -339,7 +339,7 @@
       });
 
       // Donation History (API)
-      fetch("http://localhost:3000/api/donations/history", { headers: authHeaders })
+      fetch("/api/donations/history", { headers: authHeaders })
         .then(res => res.json())
         .then(data => {
           const tbody = document.getElementById("donation-history-body");
@@ -360,7 +360,7 @@
         });
 
       // NGOs
-      fetch("http://localhost:3000/api/ngos")
+      fetch("/api/ngos")
         .then(res => res.json())
         .then(ngos => {
           const vSel = document.getElementById("vol-ngo");
@@ -376,7 +376,7 @@
       // Volunteer Form (API placeholder)
       document.getElementById('volunteer-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const res = await fetch('http://localhost:3000/api/volunteer', {
+        const res = await fetch('/api/user/register_volunteer', {
           method: 'POST',
           headers: authHeaders,
           body: JSON.stringify({

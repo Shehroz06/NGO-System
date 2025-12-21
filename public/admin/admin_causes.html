@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Approve Causes</title>
+  <link rel="stylesheet" href="/assets/css/shell.css" />
+  <style>
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+    th{background:#e8f1ec}
+
+    .pill{padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;display:inline-block}
+    .pending{background:#fff3cd;color:#856404}
+    .approved{background:#d4edda;color:#155724}
+    .rejected{background:#f8d7da;color:#721c24}
+
+    button{border:none;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}
+    .ok{background:var(--green);color:#fff}
+    .danger{background:#b00020;color:#fff}
+    .ghost{background:#f3f6f5;color:#1d2b25}
+
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:10px 0 16px}
+    .toolbar .left{display:flex;gap:10px;align-items:center}
+    .status{font-size:13px;color:#29443a}
+    .status.err{color:#b00020}
+    .muted{opacity:.8}
+    .wrap{max-width:560px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/admin/admin.html">Admin Dashboard</a>
+      <a href="/admin/admin_reports.html">Reports</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Admin</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/admin.html">Overview</a></li>
+        <li><a href="/admin/admin_events.html">Approve Events</a></li>
+        <li><a href="/admin/admin_causes.html" class="active-menu">Approve Causes</a></li>
+        <li><a href="/admin/donations.html">Donations</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>Causes Approval</h1>
+
+      <div class="toolbar">
+        <div class="left">
+          <button class="ghost" id="refresh-btn">Refresh</button>
+          <span class="status muted" id="status">Loading…</span>
+        </div>
+      </div>
+
+      <section class="section">
+        <h3>Pending</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>NGO</th><th>Title</th><th>Goal</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pending-body"></tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h3>All Causes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>NGO</th><th>Title</th><th>Goal</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="all-body"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    if(!window.auth.requireRole('admin')) { /* redirected */ }
+
+    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+    function pill(status){
+      const s = (status || 'pending').toString().toLowerCase();
+      const cls = s === 'approved' ? 'approved' : (s === 'rejected' ? 'rejected' : 'pending');
+      return `<span class="pill ${cls}">${safeText(s)}</span>`;
+    }
+
+    async function apiFetch(url, opts={}){
+      const headers = Object.assign(
+        { 'Content-Type': 'application/json' },
+        window.auth.headers(),
+        (opts.headers||{})
+      );
+      const res = await fetch(url, Object.assign({}, opts, { headers }));
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json().catch(()=>null) : await res.text().catch(()=>null);
+
+      if(!res.ok){
+        const msg = (data && data.message) ? data.message : (typeof data === 'string' ? data : `Request failed (${res.status})`);
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    const statusEl = document.getElementById('status');
+    const pendingBody = document.getElementById('pending-body');
+    const allBody = document.getElementById('all-body');
+
+    function setStatus(msg, isErr=false){
+      statusEl.textContent = msg;
+      statusEl.classList.toggle('err', !!isErr);
+      statusEl.classList.toggle('muted', !isErr);
+    }
+
+    function renderRows(rows, withActions){
+      if(!rows.length){
+        return withActions
+          ? `<tr><td colspan="5">No pending causes.</td></tr>`
+          : `<tr><td colspan="4">No causes found.</td></tr>`;
+      }
+
+      return rows.map(c => {
+        const ngo = safeText(c.ngo_name || '(Unknown NGO)');
+        const title = `<div class="wrap">${safeText(c.title)}</div>`;
+        const goal = `PKR ${Number(c.goal_amount || 0).toLocaleString()}`;
+        const st = pill(c.status);
+
+        if(withActions){
+          return `
+            <tr>
+              <td>${ngo}</td>
+              <td>${title}</td>
+              <td>${goal}</td>
+              <td>${st}</td>
+              <td>
+                <button class="ok" data-act="approve" data-id="${c.id}">Approve</button>
+                <button class="danger" data-act="reject" data-id="${c.id}">Reject</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        return `
+          <tr>
+            <td>${ngo}</td>
+            <td>${title}</td>
+            <td>${goal}</td>
+            <td>${st}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function load(){
+      try{
+        setStatus('Loading…');
+        const [pending, all] = await Promise.all([
+          apiFetch('/api/admin/causes?status=pending'),
+          apiFetch('/api/admin/causes')
+        ]);
+
+        pendingBody.innerHTML = renderRows(Array.isArray(pending) ? pending : [], true);
+        allBody.innerHTML = renderRows(Array.isArray(all) ? all : [], false);
+        setStatus('Up to date.');
+      }catch(err){
+        pendingBody.innerHTML = `<tr><td colspan="5">Failed to load.</td></tr>`;
+        allBody.innerHTML = `<tr><td colspan="4">Failed to load.</td></tr>`;
+        setStatus(err.message || 'Failed to load', true);
+      }
+    }
+
+    async function updateStatus(id, status){
+      await apiFetch(`/api/admin/causes/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', load);
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+      const next = (act === 'approve') ? 'approved' : (act === 'reject') ? 'rejected' : null;
+      if(!next) return;
+
+      if(!confirm(`Set this cause to "${next}"?`)) return;
+
+      try{
+        btn.disabled = true;
+        setStatus('Updating…');
+        await updateStatus(id, next);
+        await load();
+      }catch(err){
+        setStatus(err.message || 'Update failed', true);
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>

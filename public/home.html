@@ -146,19 +146,15 @@
   <header>
     <div class="logo">NGO Management System</div>
     <nav id="navbar">
-      <a href="home.html" class="active">Home</a>
-      <a href="login.html" id="auth-link">Login / Register</a>
-      <a href="donate.html" class="donate-main-btn">Donate Now</a>
+      <a href="/home.html" class="active">Home</a>
+      <a href="/login.html" id="auth-link">Login / Register</a>
+      <a href="/donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
   </header>
 
-  <div class="container">
-    <h1>Support a Cause</h1>
-    <div id="cause-container"></div>
-  </div>
 
   <footer>
-    <p>&copy; 2025 Smart Donation & NGO Management System</p>
+    <p>&copy; 2025 NGO Management System</p>
   </footer>
 
   <script>
@@ -167,30 +163,9 @@
       const token = localStorage.getItem('authToken');
       const navbar = document.getElementById('navbar');
 
-      // Dynamic Nav
-      if (token && role) {
-        let navHTML = `<a href="home.html" class="active">Home</a>`;
 
-        if (role === 'admin') {
-          navHTML += `<a href="admin.html">Admin Panel</a>`;
-          navHTML += `<a href="reports.html">Reports</a>`;
-        } else {
-          navHTML += `<a href="dashboard.html">Dashboard</a>`;
-        }
-
-        navHTML += `<a href="#" id="logout-nav">Logout</a>`;
-        navHTML += `<a href="donate.html" class="donate-main-btn">Donate Now</a>`;
-        navbar.innerHTML = navHTML;
-
-        document.getElementById("logout-nav").addEventListener("click", (e) => {
-          e.preventDefault();
-          localStorage.clear();
-          window.location.href = "home.html";
-        });
-      }
-
-      // Causes
-      fetch("http://localhost:3000/api/causes")
+      // causes
+      fetch("/api/causes")
         .then(res => { if (!res.ok) throw new Error("Network response was not ok"); return res.json(); })
         .then(causes => {
           const container = document.getElementById("cause-container");
@@ -219,7 +194,7 @@
             </div>
 
             <!-- donate param consistent: cause_id -->
-            <a href="donate.html?cause_id=${id}" class="donate-btn">Contribute Now</a>
+            <a href="/donate.html?cause_id=${id}" class="donate-btn">Contribute Now</a>
           </div>
         `;
           });

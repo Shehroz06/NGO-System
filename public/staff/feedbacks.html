@@ -130,7 +130,7 @@
 
     <main class="dashboard-content">
       <h1>User Feedback</h1>
-      <p class="muted">Staff can view feedback submitted by Users / Donors / Volunteerr</p>
+      <p class="muted">Staff can view feedback submitted by Users / users / Volunteerr</p>
 
       <section class="dashboard-section">
         <h3>Filters</h3>
@@ -139,7 +139,7 @@
             <label>Role</label>
             <select id="role-filter">
               <option value="all" selected>All</option>
-              <option value="donor">Donor</option>
+              <option value="user">user</option>
               <option value="volunteer">Volunteer</option>
             </select>
           </div>
@@ -160,102 +160,125 @@
     </main>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      // ---- STAFF GUARD ----
-      const token = localStorage.getItem("authToken");
-      const role  = (localStorage.getItem("userRole") || "").toLowerCase();
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // ---- STAFF GUARD ----
+  const token = localStorage.getItem("authToken");
+  const role  = (localStorage.getItem("userRole") || "").toLowerCase();
 
-      if (!token) { window.location.href = "/login.html"; return; }
-      if (role === "admin") { window.location.href = "/admin.html"; return; }
-      if (role !== "staff") { window.location.href = "/dashboard.html"; return; }
+  if (!token) { window.location.href = "/login.html"; return; }
+  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return; }
+  if (role !== "staff") { window.location.href = "/dashboard.html"; return; }
 
-      // logout
-      const logout = document.getElementById("logout-link");
-      if (logout) {
-        logout.addEventListener("click", (e) => {
-          e.preventDefault();
-          localStorage.clear();
-          window.location.href = "/home.html";
-        });
-      }
-
-      // helpers
-      const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-      const readLS = (k, fb) => { try { return JSON.parse(localStorage.getItem(k) || ""); } catch { return fb; } };
-
-      const cards = document.getElementById("feedback-cards");
-      const roleFilter = document.getElementById("role-filter");
-      const searchBox = document.getElementById("search-box");
-
-      function normalizeFeedbackItem(x) {
-        // Support multiple shapes:
-        // - {name, role, email, description, ts}
-        // - {title/subject, details/description, ...}
-        return {
-          id: x.id || "",
-          ts: x.ts || x.createdAt || Date.now(),
-          name: x.name || x.username || "Anonymous",
-          email: x.email || "",
-          role: (x.role || "user").toLowerCase(),
-          subject: x.subject || x.title || "",
-          description: x.description || x.details || x.message || ""
-        };
-      }
-
-      function render() {
-        const raw = readLS("feedbacks", []);       // <-- IMPORTANT: public feedback key
-        const items = raw.map(normalizeFeedbackItem);
-
-        const rf = (roleFilter.value || "all").toLowerCase();
-        const q = (searchBox.value || "").toLowerCase().trim();
-
-        const filtered = items.filter(fb => {
-          if (rf !== "all" && (fb.role || "").toLowerCase() !== rf) return false;
-          if (q) {
-            const blob = `${fb.name} ${fb.email} ${fb.role} ${fb.subject} ${fb.description}`.toLowerCase();
-            if (!blob.includes(q)) return false;
-          }
-          return true;
-        });
-
-        if (!filtered.length) {
-          cards.innerHTML = `<p class="muted">No feedback found.</p>`;
-          return;
-        }
-
-        cards.innerHTML = "";
-        filtered.slice().reverse().forEach(fb => {
-          const roleLabel = fb.role ? fb.role : "user";
-          const dt = new Date(fb.ts);
-
-          const el = document.createElement("div");
-          el.className = "feedback-card";
-          el.innerHTML = `
-            <div class="feedback-top">
-              <div>
-                <div class="feedback-user">${safeText(fb.name)}</div>
-                <div class="feedback-meta">
-                  <span class="pill">${safeText(roleLabel)}</span>
-                  ${fb.email ? `<span class="mono"> • ${safeText(fb.email)}</span>` : ``}
-                  <div class="feedback-date">${safeText(dt.toLocaleString())}</div>
-                </div>
-              </div>
-            </div>
-
-            ${fb.subject ? `<div style="font-weight:800; margin: 8px 0 6px; color:#1a5632;">${safeText(fb.subject)}</div>` : ``}
-            <div class="feedback-text">${safeText(fb.description || "-")}</div>
-          `;
-
-          cards.appendChild(el);
-        });
-      }
-
-      roleFilter.addEventListener("change", render);
-      searchBox.addEventListener("input", render);
-
-      render();
+  // logout
+  const logout = document.getElementById("logout-link");
+  if (logout) {
+    logout.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "/home.html";
     });
-  </script>
+  }
+
+  const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const cards = document.getElementById("feedback-cards");
+  const roleFilter = document.getElementById("role-filter");
+  const searchBox = document.getElementById("search-box");
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        ...(options.headers || {})
+      }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Request failed");
+    return data;
+  }
+
+  function normalizeFeedbackItem(x) {
+    // DB shape expected:
+    // { id, timestamp, rating, message, user_name, user_email, user_role }
+    return {
+      id: x.id || "",
+      ts: x.timestamp || x.ts || Date.now(),
+      name: x.user_name || x.name || "Anonymous",
+      email: x.user_email || x.email || "",
+      role: (x.user_role || x.role || "user").toLowerCase(),
+      subject: x.rating ? `Rating: ${x.rating}/5` : "",
+      description: x.message || x.description || ""
+    };
+  }
+
+  let cached = [];
+
+  function render() {
+    const items = cached.map(normalizeFeedbackItem);
+
+    const rf = (roleFilter.value || "all").toLowerCase();
+    const q = (searchBox.value || "").toLowerCase().trim();
+
+    const filtered = items.filter(fb => {
+      if (rf !== "all" && (fb.role || "").toLowerCase() !== rf) return false;
+      if (q) {
+        const blob = `${fb.name} ${fb.email} ${fb.role} ${fb.subject} ${fb.description}`.toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if (!filtered.length) {
+      cards.innerHTML = `<p class="muted">No feedback found.</p>`;
+      return;
+    }
+
+    cards.innerHTML = "";
+    filtered.slice().reverse().forEach(fb => {
+      const roleLabel = fb.role ? fb.role : "user";
+      const dt = new Date(fb.ts);
+
+      const el = document.createElement("div");
+      el.className = "feedback-card";
+      el.innerHTML = `
+        <div class="feedback-top">
+          <div>
+            <div class="feedback-user">${safeText(fb.name)}</div>
+            <div class="feedback-meta">
+              <span class="pill">${safeText(roleLabel)}</span>
+              ${fb.email ? `<span class="mono"> • ${safeText(fb.email)}</span>` : ``}
+              <div class="feedback-date">${safeText(dt.toLocaleString())}</div>
+            </div>
+          </div>
+        </div>
+
+        ${fb.subject ? `<div style="font-weight:800; margin: 8px 0 6px; color:#1a5632;">${safeText(fb.subject)}</div>` : ``}
+        <div class="feedback-text">${safeText(fb.description || "-")}</div>
+      `;
+
+      cards.appendChild(el);
+    });
+  }
+
+  roleFilter.addEventListener("change", render);
+  searchBox.addEventListener("input", render);
+
+  (async () => {
+    try {
+      // ensure staff has NGO
+      await api("/api/staff/me");
+
+      // fetch staff NGO feedbacks from DB (you'll add this endpoint below)
+      cached = await api("/api/staff/feedbacks");
+      render();
+    } catch (err) {
+      cards.innerHTML = `<p class="muted">${safeText(err.message)}</p>`;
+    }
+  })();
+});
+</script>
+
 </body>
 </html>

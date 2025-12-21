@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Approve Events</title>
+  <link rel="stylesheet" href="/assets/css/shell.css" />
+  <style>
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+    th{background:#e8f1ec}
+
+    .pill{padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;display:inline-block}
+    .pending{background:#fff3cd;color:#856404}
+    .approved{background:#d4edda;color:#155724}
+    .rejected{background:#f8d7da;color:#721c24}
+
+    button{border:none;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}
+    .ok{background:var(--green);color:#fff}
+    .danger{background:#b00020;color:#fff}
+    .ghost{background:#f3f6f5;color:#1d2b25}
+
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:10px 0 16px}
+    .toolbar .left{display:flex;gap:10px;align-items:center}
+    .status{font-size:13px;color:#29443a}
+    .status.err{color:#b00020}
+    .muted{opacity:.8}
+    .wrap{max-width:520px}
+    .small{font-size:12px;opacity:.8}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/admin/admin.html">Admin Dashboard</a>
+      <a href="/admin/admin_reports.html">Reports</a>
+      <!-- ✅ new navbar link -->
+      <a href="/admin/volunteers.html">Volunteers</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Admin</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/admin.html">Overview</a></li>
+        <li><a href="/admin/admin_events.html" class="active-menu">Approve Events</a></li>
+        <li><a href="/admin/admin_causes.html">Approve Causes</a></li>
+        <li><a href="/admin/donations.html">Donations</a></li>
+        <!-- ✅ new sidebar link -->
+        <li><a href="/admin/feedbacks.html">Feedback</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>Events Approval</h1>
+
+      <div class="toolbar">
+        <div class="left">
+          <button id="refresh-btn" class="ghost" type="button">Refresh</button>
+          <div id="status" class="status muted">&nbsp;</div>
+        </div>
+        <div class="small">Uses DB APIs: <code>/api/admin/events</code> + <code>/api/admin/events/:id/status</code></div>
+      </div>
+
+      <section class="section">
+        <h3>Pending</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>NGO</th>
+              <th>Title</th>
+              <th>Start</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pending-body"></tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h3>All Events</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>NGO</th>
+              <th>Title</th>
+              <th>Start</th>
+              <th>Location</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="all-body"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    if(!window.auth.requireRole('admin')) { /* redirected */ }
+
+    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+    function pill(status){
+      const s = (status || 'pending').toString().toLowerCase();
+      const cls = s === 'approved' ? 'approved' : (s === 'rejected' ? 'rejected' : 'pending');
+      return `<span class="pill ${cls}">${safeText(s)}</span>`;
+    }
+
+    function fmt(dt){
+      if(!dt) return '';
+      const d = new Date(dt);
+      if(Number.isNaN(d.getTime())) return safeText(dt);
+      return d.toLocaleString();
+    }
+
+    async function apiFetch(url, opts={}){
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, window.auth.headers(), (opts.headers||{}));
+      const res = await fetch(url, Object.assign({}, opts, { headers }));
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json().catch(()=>null) : await res.text().catch(()=>null);
+      if(!res.ok){
+        const msg = (data && data.message) ? data.message : (typeof data === 'string' ? data : `Request failed (${res.status})`);
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    const statusEl = document.getElementById('status');
+    const pendingBody = document.getElementById('pending-body');
+    const allBody = document.getElementById('all-body');
+
+    function setStatus(msg, isErr=false){
+      statusEl.textContent = msg;
+      statusEl.classList.toggle('err', !!isErr);
+      statusEl.classList.toggle('muted', !msg || !isErr);
+    }
+
+    function ngoName(e){
+      return safeText(e.ngo_name || e.ngo || e.name || '(Unknown NGO)');
+    }
+
+    function renderRows(rows, withActions){
+      if(!rows.length){
+        return withActions
+          ? `<tr><td colspan="6">No pending events.</td></tr>`
+          : `<tr><td colspan="5">No events found.</td></tr>`;
+      }
+
+      return rows.map(e => {
+        const id = e.id ?? e.event_id;          // ✅ fix: tolerate api naming
+        const ngo = ngoName(e);
+        const title = `<div class="wrap">${safeText(e.title)}</div>`;
+        const start = safeText(fmt(e.start_datetime));
+        const loc = safeText(e.location || '');
+        const st = pill(e.status);
+
+        if(withActions){
+          return `
+            <tr>
+              <td>${ngo}</td>
+              <td>${title}</td>
+              <td>${start}</td>
+              <td>${loc}</td>
+              <td>${st}</td>
+              <td>
+                <button class="ok" data-act="approve" data-id="${safeText(id)}">Approve</button>
+                <button class="danger" data-act="reject" data-id="${safeText(id)}">Reject</button>
+              </td>
+            </tr>
+          `;
+        }
+
+        return `
+          <tr>
+            <td>${ngo}</td>
+            <td>${title}</td>
+            <td>${start}</td>
+            <td>${loc}</td>
+            <td>${st}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function load(){
+      try{
+        setStatus('Loading…');
+        const [pending, all] = await Promise.all([
+          apiFetch('/api/admin/events?status=pending'),
+          apiFetch('/api/admin/events')
+        ]);
+
+        pendingBody.innerHTML = renderRows(Array.isArray(pending) ? pending : [], true);
+        allBody.innerHTML = renderRows(Array.isArray(all) ? all : [], false);
+        setStatus('Up to date.');
+      }catch(err){
+        pendingBody.innerHTML = `<tr><td colspan="6">Failed to load.</td></tr>`;
+        allBody.innerHTML = `<tr><td colspan="5">Failed to load.</td></tr>`;
+        setStatus(err.message || 'Failed to load', true);
+      }
+    }
+
+    async function updateStatus(id, status){
+      await apiFetch(`/api/admin/events/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      });
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', load);
+
+    document.addEventListener('click', async (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+      const next = (act === 'approve') ? 'approved' : (act === 'reject') ? 'rejected' : null;
+      if(!next) return;
+
+      try{
+        btn.disabled = true;
+        setStatus('Updating…');
+        await updateStatus(id, next);
+        await load();
+      }catch(err){
+        setStatus(err.message || 'Update failed', true);
+      }finally{
+        btn.disabled = false;
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>

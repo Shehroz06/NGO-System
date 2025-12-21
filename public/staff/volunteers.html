@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Volunteers - Staff Panel</title>
+  <title>volunteers - Staff Panel</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
     header { background-color: #1a5632; color: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -57,10 +57,10 @@
   <header>
     <div class="logo">NGO Management System</div>
     <nav id="top-nav">
-      <a href="staff-dashboard.html">Staff Dashboard</a>
-      <a href="staff_reports.html">Reports</a>
+      <a href="/staff/staff-dashboard.html">Staff Dashboard</a>
+      <a href="/staff/staff_reports.html">Reports</a>
       <a href="#" id="logout-link">Logout</a>
-      <a href="donate.html" class="donate-main-btn">Donate Now</a>
+      <a href="/donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
   </header>
 
@@ -68,16 +68,16 @@
     <aside class="sidebar">
       <h2>NGO Staff</h2>
       <ul class="sidebar-menu">
-        <li><a href="staff-dashboard.html">Overview</a></li>
-        <li><a href="events.html">Events</a></li>
-        <li><a class="active-menu" href="volunteers.html">Volunteers</a></li>
-        <li><a href="causes.html">Causes</a></li>
-        <li><a href="feedbacks.html">Feedback</a></li>
+        <li><a href="/staff/staff-dashboard.html">Overview</a></li>
+        <li><a href="/staff/events.html">events</a></li>
+        <li><a class="active-menu" href="/staff/volunteers.html">volunteers</a></li>
+        <li><a href="/staff/causes.html">causes</a></li>
+        <li><a href="/staff/feedbacks.html">Feedback</a></li>
       </ul>
     </aside>
 
     <main class="dashboard-content">
-      <h1>Volunteers</h1>
+      <h1>volunteers</h1>
       <p class="muted">Assign volunteers to events (localStorage demo).</p>
 
       <section class="dashboard-section">
@@ -128,27 +128,13 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ ROLE REDIRECT (use in every page)
+  // ---- STAFF GUARD ----
   const token = localStorage.getItem("authToken");
   const role  = (localStorage.getItem("userRole") || "").toLowerCase();
 
-  if (!token) { window.location.href = "login.html"; return; }
-
-  if (role === "admin") {
-    if (!location.pathname.endsWith("admin.html")) window.location.href = "admin.html";
-    return;
-  }
-
-  if (role === "staff") {
-    const staffAllowed = [
-      "staff-dashboard.html","events.html","volunteers.html","causes.html","staff_reports.html","feedbacks.html"
-    ];
-    const ok = staffAllowed.some(p => location.pathname.endsWith(p));
-    if (!ok) window.location.href = "staff-dashboard.html";
-    return;
-  }
-
-  if (!location.pathname.endsWith("dashboard.html")) window.location.href = "dashboard.html";
+  if (!token) { window.location.href = "/login.html"; return; }
+  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return; }
+  if (role !== "staff") { window.location.href = "/dashboard.html"; return; }
 
   // logout
   const logout = document.getElementById("logout-link");
@@ -156,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
     logout.addEventListener("click", (e) => {
       e.preventDefault();
       localStorage.clear();
-      window.location.href = "home.html";
+      window.location.href = "/home.html";
     });
   }
 
@@ -171,37 +157,72 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => el.textContent = "", 2200);
   };
 
-  // demo volunteer list (you can replace with DB later)
-  const demoVols = [
-    { id: "v1", name: "Ali Raza", skill: "First Aid" },
-    { id: "v2", name: "Ayesha Khan", skill: "Coordination" },
-    { id: "v3", name: "Usman Tariq", skill: "Logistics" }
-  ];
-  if (!localStorage.getItem("staff_volunteers")) writeLS("staff_volunteers", demoVols);
+  async function api(path, options = {}) {
+    const res = await fetch(path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        ...(options.headers || {})
+      }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || "Request failed");
+    return data;
+  }
 
-  const eventSelect = document.getElementById("event-select");
-  const volSelect = document.getElementById("vol-select");
-  const tbody = document.getElementById("assignments-body");
-  const msg = document.getElementById("assign-msg");
+  const eventselect = document.getElementById("event-select");
+  const volSelect   = document.getElementById("vol-select");
+  const tbody       = document.getElementById("assignments-body");
+  const msg         = document.getElementById("assign-msg");
+
+  // cached DB data
+  let dbEvents = [];
+  let dbVols = [];
+
+  function normalizeEvent(e) {
+    return {
+      id: String(e.id),
+      title: e.title,
+      date: e.start_datetime || "",
+      status: (e.status || "pending").toLowerCase()
+    };
+  }
+
+  function normalizeVolunteer(v) {
+    return {
+      id: String(v.id),
+      name: v.name,
+      skill: v.skill || ""
+    };
+  }
 
   function fillDropdowns() {
-    const events = readLS("staff_events", []);
-    const vols = readLS("staff_volunteers", []);
+    // Events: show approved + pending; you can filter if you want
+    eventselect.innerHTML = "";
+    const usableEvents = (dbEvents || [])
+      .map(normalizeEvent)
+      .filter(e => e.status !== "rejected");
 
-    eventSelect.innerHTML = "";
-    if (!events.length) {
-      eventSelect.innerHTML = `<option value="">No events (Add from Events page)</option>`;
+    if (!usableEvents.length) {
+      eventselect.innerHTML = `<option value="">No events yet (create from Events page)</option>`;
     } else {
-      eventSelect.innerHTML = `<option value="">Select Event</option>`;
-      events.forEach(ev => {
-        eventSelect.innerHTML += `<option value="${safeText(ev.id)}">${safeText(ev.title)} (${safeText(ev.date)})</option>`;
+      eventselect.innerHTML = `<option value="">Select Event</option>`;
+      usableEvents.forEach(ev => {
+        eventselect.innerHTML += `<option value="${safeText(ev.id)}">${safeText(ev.title)} (${safeText(ev.date)})</option>`;
       });
     }
 
-    volSelect.innerHTML = `<option value="">Select Volunteer</option>`;
-    vols.forEach(v => {
-      volSelect.innerHTML += `<option value="${safeText(v.id)}">${safeText(v.name)} (${safeText(v.skill)})</option>`;
-    });
+    // Volunteers from DB
+    volSelect.innerHTML = "";
+    if (!(dbVols || []).length) {
+      volSelect.innerHTML = `<option value="">No volunteers registered yet</option>`;
+    } else {
+      volSelect.innerHTML = `<option value="">Select Volunteer</option>`;
+      (dbVols || []).map(normalizeVolunteer).forEach(v => {
+        volSelect.innerHTML += `<option value="${safeText(v.id)}">${safeText(v.name)} (${safeText(v.skill)})</option>`;
+      });
+    }
   }
 
   function loadAssignments() {
@@ -237,16 +258,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("assign-form").addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const evId = eventSelect.value;
-    const vId = volSelect.value;
+    const evId = eventselect.value;
+    const vId  = volSelect.value;
 
-    const events = readLS("staff_events", []);
-    const vols = readLS("staff_volunteers", []);
-    const ev = events.find(x => x.id === evId);
-    const v = vols.find(x => x.id === vId);
+    const ev = (dbEvents || []).map(normalizeEvent).find(x => x.id === evId);
+    const v  = (dbVols || []).map(normalizeVolunteer).find(x => x.id === vId);
 
     if (!ev) { setMsg(msg, false, "Please create/select an event first."); return; }
-    if (!v) { setMsg(msg, false, "Please select a volunteer."); return; }
+    if (!v)  { setMsg(msg, false, "Please select a volunteer."); return; }
 
     const row = {
       id: uid(),
@@ -268,9 +287,28 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAssignments();
   });
 
-  fillDropdowns();
-  loadAssignments();
+  (async () => {
+    try {
+      // ensure staff has NGO
+      await api("/api/staff/me");
+
+      // DB-backed lists
+      dbEvents = await api("/api/staff/events");
+
+      // you'll add this endpoint below
+      dbVols = await api("/api/staff/volunteers");
+
+      fillDropdowns();
+      loadAssignments();
+    } catch (err) {
+      setMsg(msg, false, err.message);
+      // still render assignments even if dropdowns fail
+      fillDropdowns();
+      loadAssignments();
+    }
+  })();
 });
 </script>
+
 </body>
 </html>

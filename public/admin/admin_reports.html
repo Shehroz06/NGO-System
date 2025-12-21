@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Reports - NGO Management System</title>
+  <link rel="stylesheet" href="/assets/css/shell.css" />
+
+  <style>
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:14px;
+      margin: 10px 0 22px;
+    }
+    .card{
+      background:#fff;
+      border-radius:14px;
+      box-shadow:0 8px 20px rgba(0,0,0,.06);
+      padding:18px;
+      border:1px solid #eef2ef;
+    }
+    .card .label{color:var(--muted); font-weight:800; font-size:13px;}
+    .card .value{font-size:26px; font-weight:900; margin-top:8px; color:#1a5632;}
+    .muted{color:var(--muted)}
+    table{width:100%; border-collapse:collapse}
+    th,td{padding:12px 12px; border-bottom:1px solid #eee; text-align:left; vertical-align:top}
+    th{background:#e8f1ec; font-size:13px; color:#29443a}
+    .toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin: 10px 0 14px;}
+    .btn{
+      border:none; border-radius:10px; padding:10px 12px; font-weight:900; cursor:pointer;
+      background: var(--green); color:#fff;
+    }
+    .ghost{
+      background:#f3f6f5; color:#1d2b25;
+    }
+    .status{font-size:13px}
+    .status.err{color:#b00020}
+    .scroll{max-height:420px; overflow:auto; border-radius:12px; border:1px solid #eef2ef; background:#fff}
+    @media (max-width: 900px){
+      .cards{grid-template-columns: 1fr;}
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/admin/admin.html">Admin Dashboard</a>
+      <a href="/admin/admin_reports.html" class="active-menu">Reports</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Admin</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/admin.html">Overview</a></li>
+        <li><a href="/admin/admin_events.html">Approve Events</a></li>
+        <li><a href="/admin/admin_causes.html">Approve Causes</a></li>
+        <li><a href="/admin/donations.html">Donations</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>Reports</h1>
+      <p class="muted">Key metrics + admin audit logs.</p>
+
+      <!-- METRIC CARDS -->
+      <div class="cards">
+        <div class="card">
+          <div class="label">Total Donations</div>
+          <div class="value" id="m-total">PKR 0</div>
+        </div>
+        <div class="card">
+          <div class="label">Active Causes</div>
+          <div class="value" id="m-active">0</div>
+        </div>
+        <div class="card">
+          <div class="label">Registered Users</div>
+          <div class="value" id="m-users">0</div>
+        </div>
+      </div>
+
+      <!-- AUDIT LOGS -->
+      <section class="section">
+        <div class="toolbar">
+          <div>
+            <h3 style="margin:0">Admin Audit Logs</h3>
+            <div class="status muted" id="audit-status">Loading…</div>
+          </div>
+          <div>
+            <button class="btn ghost" id="refresh-audit" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:220px">Timestamp</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="audit-body">
+              <tr><td colspan="2">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Placeholder -->
+      <section class="section">
+        <h3>Volunteer Applications</h3>
+        <p class="muted">API integration later.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    if(!window.auth.requireRole('admin')) { /* redirected */ }
+
+    const auditBody = document.getElementById('audit-body');
+    const auditStatus = document.getElementById('audit-status');
+
+    function setAuditStatus(msg, isErr=false){
+      auditStatus.textContent = msg;
+      auditStatus.classList.toggle('err', !!isErr);
+      auditStatus.classList.toggle('muted', !isErr);
+    }
+
+    async function loadPublicStats(){
+      try{
+        const res = await fetch('/api/public-stats');
+        const data = await res.json().catch(()=>({}));
+        if(!res.ok) throw new Error(data.message || 'Failed to load stats');
+
+        const total = Number(data.totalDonations || 0);
+        document.getElementById('m-total').textContent = 'PKR ' + total.toLocaleString();
+        document.getElementById('m-active').textContent = Number(data.activecauses || 0).toLocaleString();
+        document.getElementById('m-users').textContent = Number(data.registeredUsers || 0).toLocaleString();
+      }catch(e){
+        // keep page usable even if stats fail
+        console.error(e);
+      }
+    }
+
+    async function loadAudit(){
+      try{
+        setAuditStatus('Loading…');
+        auditBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
+
+        const res = await fetch('/api/audit', { headers: window.auth.headers() });
+        const logs = await res.json().catch(()=>[]);
+        if(!res.ok) throw new Error(logs.message || 'Failed to load audit logs');
+
+        if(!Array.isArray(logs) || !logs.length){
+          auditBody.innerHTML = `<tr><td colspan="2">No recent admin actions.</td></tr>`;
+          setAuditStatus('Up to date.');
+          return;
+        }
+
+        auditBody.innerHTML = logs.map(l => {
+          const ts = l.timestamp ? new Date(l.timestamp).toLocaleString() : '-';
+          const act = (l.actionDetails || l.action || '-').toString();
+          return `<tr><td>${ts}</td><td>${act}</td></tr>`;
+        }).join('');
+
+        setAuditStatus('Up to date.');
+      }catch(e){
+        auditBody.innerHTML = `<tr><td colspan="2">Failed to load logs.</td></tr>`;
+        setAuditStatus(e.message || 'Failed to load', true);
+      }
+    }
+
+    document.getElementById('refresh-audit').addEventListener('click', loadAudit);
+
+    loadPublicStats();
+    loadAudit();
+  </script>
+</body>
+</html>

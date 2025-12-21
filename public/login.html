@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login & Register - NGO Management System</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #1a5632;
+      color: white;
+      padding: 15px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      padding: 50px 20px;
+    }
+
+    .auth-box {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      color: #666;
+      font-weight: bold;
+    }
+
+    .tab.active {
+      color: #1a5632;
+      border-bottom: 3px solid #1a5632;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: #1a5632;
+      color: white;
+      border: none;
+      padding: 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background: #134226;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/home.html" style="color: white; text-decoration: none;">Home</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="auth-box">
+      <div class="tabs">
+        <div id="login-tab" class="tab active" onclick="toggleAuth('login')">Login</div>
+        <div id="register-tab" class="tab" onclick="toggleAuth('register')">Register</div>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="login-email" placeholder="name@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="submit-btn">Sign In</button>
+      </form>
+
+      <form id="register-form" class="hidden">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Ali Akbar" required>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" placeholder="name@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Create Password</label>
+          <input type="password" id="reg-password" placeholder="Min. 8 characters" required>
+        </div>
+
+        <div class="form-group">
+          <label>Account Type</label>
+          <select id="reg-role">
+            <option value="user">user</option>
+            <option value="admin">Admin</option>
+            <option value="staff">NGO Staff</option>
+          </select>
+        </div>
+
+        <button type="submit" class="submit-btn" style="background: #2b7049;">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+ <script>
+  function toggleAuth(type) {
+    const loginForm = document.getElementById('login-form');
+    const regForm = document.getElementById('register-form');
+    const loginTab = document.getElementById('login-tab');
+    const regTab = document.getElementById('register-tab');
+
+    if (type === 'login') {
+      loginForm.classList.remove('hidden');
+      regForm.classList.add('hidden');
+      loginTab.classList.add('active');
+      regTab.classList.remove('active');
+    } else {
+      loginForm.classList.add('hidden');
+      regForm.classList.remove('hidden');
+      loginTab.classList.remove('active');
+      regTab.classList.add('active');
+    }
+  }
+
+  // If already logged in, route correctly
+  (function boot() {
+    const token = localStorage.getItem("authToken");
+    const role = (localStorage.getItem("userRole") || "").toLowerCase();
+    if (token && role) {
+      const target =
+        (role === "admin") ? "/admin/admin-dashboard.html" :
+        (role === "staff") ? "/staff/staff-dashboard.html" :
+        "/dashboard.html";
+      window.location.href = target;
+    }
+  })();
+
+  async function postJson(url, payload) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    return { res, data };
+  }
+
+  function saveSession({ token, role, name, email }) {
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("userRole", role);
+    localStorage.setItem("userName", name || "");
+    localStorage.setItem("userEmail", email || "");
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    try {
+      const { res, data } = await postJson("/api/auth/login", { email, password });
+
+      if (res.ok) {
+        saveSession({ token: data.token, role: (data.role || "").toLowerCase(), name: data.name, email });
+
+        window.location.href =
+          (data.role === 'admin') ? '/admin/admin.html' :
+          (data.role === 'staff') ? '/staff/staff-dashboard.html' :
+          '/dashboard.html';
+      } else {
+        alert(data.message || "Login failed. Please check your email and password.");
+      }
+    } catch (err) {
+      alert("Server connection failed. Is your backend running?");
+    }
+  });
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const role = (document.getElementById('reg-role').value || "user").toLowerCase();
+
+    try {
+      // 1) signup
+      const { res: signupRes, data: signupData } = await postJson("/api/auth/signup", {
+        name, email, password, role
+      });
+
+      if (!signupRes.ok) {
+        alert(signupData.message || "Registration failed.");
+        return;
+      }
+
+      // 2) if staff: auto-login then go to add_ngo (DB-backed)
+      if (role === "staff") {
+        const { res: loginRes, data: loginData } = await postJson("/api/auth/login", { email, password });
+
+        if (!loginRes.ok) {
+          alert("Staff created, but auto-login failed. Please login manually.");
+          toggleAuth('login');
+          return;
+        }
+
+        saveSession({
+          token: loginData.token,
+          role: (loginData.role || "").toLowerCase(),
+          name: loginData.name,
+          email
+        });
+
+        window.location.href = "/add_ngo.html";
+        return;
+      }
+
+      alert("Account created successfully! You can now login.");
+      document.getElementById('register-form').reset();
+      toggleAuth('login');
+
+    } catch (err) {
+      alert("Error connecting to server.");
+    }
+  });
+</script>
+
+
+</body>
+
+</html>
