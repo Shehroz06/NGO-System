@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Volunteers</title>
+  <link rel="stylesheet" href="/assets/css/shell.css" />
+  <style>
+    .toolbar{display:flex;gap:12px;align-items:end;justify-content:space-between;margin:10px 0 16px}
+    .filters{display:grid;grid-template-columns:1fr 220px 140px;gap:12px;align-items:end;width:100%}
+    input,select{padding:10px 12px;border-radius:10px;border:1px solid #ddd;width:100%}
+    button{border:none;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}
+    .btn{background:var(--green);color:#fff}
+    .ghost{background:#f3f6f5;color:#1d2b25}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+    th{background:#e8f1ec}
+    .muted{color:var(--muted);font-size:13px}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#f3f6f5}
+    .wrap{max-width:420px;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NGO Management System</div>
+    <nav>
+      <a href="/admin/admin.html">Admin Dashboard</a>
+      <a href="/admin/admin_reports.html">Reports</a>
+      <a href="/admin/admin_donations.html">Donations</a>
+      <a href="#" id="logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <h2>Admin</h2>
+      <ul class="sidebar-menu">
+        <li><a href="/admin/admin.html" >Overview</a></li>
+        <li><a href="/admin/admin_events.html">Approve Events</a></li>
+        <li><a href="/admin/admin_causes.html">Approve Causes</a></li>
+        <li><a href="/admin/admin_volunteers.html"class="active-menu">Volunteers</a></li>
+        <li><a href="/admin/admin_feedbacks.html">Feedback</a></li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-content">
+      <h1>Volunteers</h1>
+      <p class="muted">List all registered volunteers. Filter by NGO or search by name/email/skills.</p>
+
+      <section class="section">
+        <div class="toolbar">
+          <div class="filters">
+            <div>
+              <label class="muted">Search (name/email/skills)</label>
+              <input id="q" placeholder="e.g. ayesha@gmail.com or 'first aid'" />
+            </div>
+            <div>
+              <label class="muted">NGO</label>
+              <select id="ngo">
+                <option value="">All NGOs</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn" id="btn-search">Search</button>
+            </div>
+          </div>
+          <button class="ghost" id="btn-reset">Reset</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <table>
+          <thead>
+            <tr>
+              <th>Volunteer ID</th>
+              <th>User</th>
+              <th>Email</th>
+              <th>NGO</th>
+              <th>Skills</th>
+              <th>Availability</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="6">Loading…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p class="muted" style="margin-top:10px">
+        Note: “Volunteer assign to NGO/Event” needs an assignment table (or a junction table).
+        This page is ready to show assignments once that table exists.
+      </p>
+    </main>
+  </div>
+
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    if(!window.auth.requireRole('admin')) { /* redirected */ }
+
+    const rowsEl = document.getElementById('rows');
+    const ngoSel = document.getElementById('ngo');
+
+    const safeText = (v) => (v ?? '').toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+    async function api(url){
+      const res = await fetch(url, { headers: window.auth.headers() });
+      const data = await res.json().catch(()=>[]);
+      if(!res.ok) throw new Error((data && data.message) || 'Request failed');
+      return data;
+    }
+
+    async function loadNgos(){
+      try{
+        const ngos = await fetch('/api/ngos').then(r=>r.json()).catch(()=>[]);
+        ngos.forEach(n=>{
+          const opt = document.createElement('option');
+          opt.value = (n.id ?? n.ngo_id ?? '');
+          opt.textContent = n.name ?? 'NGO';
+          ngoSel.appendChild(opt);
+        });
+      }catch{}
+    }
+
+    function rowHTML(v){
+      return `
+        <tr>
+          <td>${safeText(v.volunteer_id)}</td>
+          <td>${safeText(v.user_name || '')}</td>
+          <td>${safeText(v.user_email || '')}</td>
+          <td>${safeText(v.ngo_name || '')}</td>
+          <td class="wrap">${safeText(v.skills || v.skill || '')}</td>
+          <td class="wrap">${safeText(v.availability || '')}</td>
+        </tr>
+      `;
+    }
+
+    async function load(){
+      const q = document.getElementById('q').value.trim();
+      const ngo_id = ngoSel.value;
+
+      const url = `/api/admin/desk?kind=volunteers`
+        + (q ? `&q=${encodeURIComponent(q)}` : '')
+        + (ngo_id ? `&ngo_id=${encodeURIComponent(ngo_id)}` : '');
+
+      rowsEl.innerHTML = `<tr><td colspan="6">Loading…</td></tr>`;
+      try{
+        const data = await api(url);
+        if(!data.length){
+          rowsEl.innerHTML = `<tr><td colspan="6">No volunteers found.</td></tr>`;
+          return;
+        }
+        rowsEl.innerHTML = data.map(rowHTML).join('');
+      }catch(err){
+        rowsEl.innerHTML = `<tr><td colspan="6">${safeText(err.message || 'Failed')}</td></tr>`;
+      }
+    }
+
+    document.getElementById('btn-search').addEventListener('click', load);
+    document.getElementById('btn-reset').addEventListener('click', ()=>{
+      document.getElementById('q').value='';
+      ngoSel.value='';
+      load();
+    });
+
+    loadNgos().then(load);
+  </script>
+</body>
+</html>
