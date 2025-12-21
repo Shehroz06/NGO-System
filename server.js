@@ -154,12 +154,34 @@ app.get('/api/public-stats', async (req, res) => {
     return res.status(500).json({ message: 'DB error', error: e.message });
   }
 });
+// Public: causes for a specific NGO (approved only)
+app.get('/api/ngos/:ngoId/causes', async (req, res) => {
+  try {
+    const ngoId = Number(req.params.ngoId);
+    if (!ngoId) return res.status(400).json({ message: 'Invalid ngoId' });
+
+    const [rows] = await pool.query(
+      `
+      SELECT cause_id AS id, title
+      FROM Cause
+      WHERE ngo_id = ? AND status = 'approved'
+      ORDER BY cause_id DESC
+      `,
+      [ngoId]
+    );
+
+    return res.json(rows);
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
 
 // ---------- DONATIONS ----------
 // Guest donation: Donation.user_id NOT NULL, so we auto-create/find a user by email.
 app.post('/process-donation', async (req, res) => {
   try {
-    const { cause_id, cause_name, amount, name, email } = req.body;
+const { cause_id, cause_name, amount, name, email, payment_method } = req.body;
+
 
     if (!amount || Number(amount) <= 0) {
       return res.status(400).json({ message: 'Invalid amount' });
@@ -204,7 +226,8 @@ app.post('/process-donation', async (req, res) => {
     } else {
       const randomPass = crypto.randomBytes(16).toString('hex');
       const hashed = await bcrypt.hash(randomPass, 10);
-      const displayName = name && name.trim() ? name.trim() : 'Guest user';
+      const displayName = name && name.trim() ? name.trim() : 'Anonymous';
+
 
       const [ins] = await pool.query(
         'INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, ?)',
@@ -223,8 +246,8 @@ app.post('/process-donation', async (req, res) => {
       await conn.beginTransaction();
 
       const [donRes] = await conn.query(
-        'INSERT INTO Donation (user_id, amount) VALUES (?, ?)',
-        [userId, Number(amount)]
+ 'INSERT INTO Donation (user_id, amount, payment_method) VALUES (?, ?, ?)',
+ [userId, Number(amount), payment_method || 'physical']
       );
 
       await conn.query(
@@ -248,7 +271,7 @@ app.post('/process-donation', async (req, res) => {
 // Logged-in donation API
 app.post('/api/donations', requireAuth, async (req, res) => {
   try {
-    const { cause_id, amount } = req.body;
+   const { cause_id, amount, payment_method } = req.body;
     if (!cause_id || !amount || Number(amount) <= 0) {
       return res.status(400).json({ message: 'cause_id and valid amount required' });
     }
@@ -268,8 +291,8 @@ app.post('/api/donations', requireAuth, async (req, res) => {
       }
 
       const [donRes] = await conn.query(
-        'INSERT INTO Donation (user_id, amount) VALUES (?, ?)',
-        [req.user.user_id, Number(amount)]
+'INSERT INTO Donation (user_id, amount, payment_method) VALUES (?, ?, ?)',
+[req.user.user_id, Number(amount), payment_method || 'physical']
       );
 
       await conn.query(
@@ -300,7 +323,7 @@ app.get('/api/donations/history', requireAuth, async (req, res) => {
         d.donation_date AS date,
         c.title AS causeTitle,
         dc.amount_allocated AS amount,
-        'DB' AS method
+        d.payment_method
       FROM Donation d
       JOIN Donation_Cause dc ON dc.donation_id = d.donation_id
       JOIN Cause c ON c.cause_id = dc.cause_id
@@ -398,6 +421,66 @@ app.post('/api/volunteer', requireAuth, async (req, res) => {
     return res.status(500).json({ message: 'DB error', error: e.message });
   }
 });
+// ---------- FEEDBACK VIEW (Admin + Staff) ----------
+// Admin: sees all feedback, can filter by ngo_id and q (name/email/message)
+// Staff: sees feedback ONLY for their own NGO (from Staff table)
+app.get('/api/feedbacks', requireAuth, requireRole('admin', 'staff'), async (req, res) => {
+  try {
+    const role = String(req.user.role || '').toLowerCase();
+    const q = (req.query.q || '').toString().trim();
+    const ngoIdParam = req.query.ngo_id ? Number(req.query.ngo_id) : null;
+
+    let ngoId = ngoIdParam;
+
+    // Staff forced to their NGO
+    if (role === 'staff') {
+      const ctx = await getStaffContext(req.user.user_id);
+      if (!ctx) {
+        return res.status(404).json({ message: 'Staff record not found (assign NGO first).' });
+      }
+      ngoId = ctx.ngo_id;
+    }
+
+    const params = [];
+    const where = [];
+
+    if (ngoId) {
+      where.push('f.ngo_id = ?');
+      params.push(ngoId);
+    }
+
+    if (q) {
+      where.push('(u.name LIKE ? OR u.email LIKE ? OR f.message LIKE ?)');
+      const like = `%${q}%`;
+      params.push(like, like, like);
+    }
+const sql = `
+  SELECT
+    f.feedback_id AS id,
+    f.ngo_id,
+    n.name AS ngo_name,
+    f.rating,
+    f.message,
+    f.timestamp,
+    u.user_id AS user_id,
+    u.name AS user_name,
+    u.email AS user_email,
+    u.role AS user_role
+  FROM Feedback f
+  JOIN Users u ON u.user_id = f.user_id
+  JOIN NGO n ON n.ngo_id = f.ngo_id
+  ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+  ORDER BY f.timestamp DESC
+  LIMIT 1000
+`;
+
+
+    const [rows] = await pool.query(sql, params);
+    return res.json(rows);
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
 
 app.post('/api/user/register_volunteer', requireAuth, async (req, res) => {
   const { skills, ngo_id, availability } = req.body;
@@ -426,7 +509,8 @@ app.post('/api/user/register_volunteer', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/user/submit_feedback', requireAuth, async (req, res) => {
+app.post('/api/user/submit_feedback', requireAuth, requireRole('user'), async (req, res) => {
+
   const { ngo_id, rating, message } = req.body;
   try {
     const userId = req.user.user_id;
@@ -932,6 +1016,126 @@ app.get('/api/audit', requireAuth, requireRole('admin'), async (req, res) => {
     return res.status(500).json({ message: 'DB error', error: e.message });
   }
 });
+// ---------- ADMIN OPS (COMBINED) ----------
+app.get('/api/admin/ops', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const type = String(req.query.type || '').toLowerCase();
+    const ngo_id = req.query.ngo_id ? Number(req.query.ngo_id) : null;
+    const q = String(req.query.q || '').trim();
+    const minRating = req.query.minRating ? Number(req.query.minRating) : null;
+
+    if (!type) return res.status(400).json({ message: 'type is required' });
+
+    // ---- FEEDBACK LIST ----
+    if (type === 'feedback') {
+      const where = [];
+      const params = [];
+
+      if (ngo_id) { where.push('f.ngo_id = ?'); params.push(ngo_id); }
+      if (minRating && !Number.isNaN(minRating)) { where.push('f.rating >= ?'); params.push(minRating); }
+
+      if (q) {
+        where.push('(u.name LIKE ? OR u.email LIKE ? OR f.message LIKE ? OR n.name LIKE ?)');
+        const like = `%${q}%`;
+        params.push(like, like, like, like);
+      }
+
+      const sql = `
+        SELECT
+          f.feedback_id,
+          f.rating,
+          f.message,
+          f.timestamp,
+          n.ngo_id,
+          n.name AS ngo_name,
+          u.user_id,
+          u.name AS user_name,
+          u.email AS user_email
+        FROM Feedback f
+        JOIN Users u ON u.user_id = f.user_id
+        JOIN NGO n ON n.ngo_id = f.ngo_id
+        ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+        ORDER BY f.timestamp DESC
+        LIMIT 500
+      `;
+
+      const [rows] = await pool.query(sql, params);
+      return res.json({ items: rows });
+    }
+
+    // ---- VOLUNTEERS LIST ----
+    if (type === 'volunteers') {
+      const where = [];
+      const params = [];
+
+      if (ngo_id) { where.push('v.primary_ngo_id = ?'); params.push(ngo_id); }
+
+      if (q) {
+        where.push('(u.name LIKE ? OR u.email LIKE ? OR v.skill LIKE ? OR v.availability LIKE ?)');
+        const like = `%${q}%`;
+        params.push(like, like, like, like);
+      }
+
+      const sql = `
+        SELECT
+          v.volunteer_id,
+          v.skill,
+          v.availability,
+          v.primary_ngo_id,
+          u.user_id,
+          u.name AS user_name,
+          u.email AS user_email
+        FROM Volunteer v
+        JOIN Users u ON u.user_id = v.user_id
+        ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+        ORDER BY v.volunteer_id DESC
+        LIMIT 500
+      `;
+
+      const [rows] = await pool.query(sql, params);
+      return res.json({ items: rows });
+    }
+
+    return res.status(400).json({ message: 'Invalid type' });
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
+
+app.patch('/api/admin/ops', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const type = String(req.body.type || '').toLowerCase();
+
+    if (type === 'volunteer_primary_ngo') {
+      const volunteer_id = Number(req.body.volunteer_id);
+      const primary_ngo_id = (req.body.primary_ngo_id === null || req.body.primary_ngo_id === '' || typeof req.body.primary_ngo_id === 'undefined')
+        ? null
+        : Number(req.body.primary_ngo_id);
+
+      if (!volunteer_id) return res.status(400).json({ message: 'volunteer_id required' });
+
+      // optional: validate NGO exists if provided
+      if (primary_ngo_id) {
+        const [[ngo]] = await pool.query('SELECT ngo_id FROM NGO WHERE ngo_id=? LIMIT 1', [primary_ngo_id]);
+        if (!ngo) return res.status(404).json({ message: 'NGO not found' });
+      }
+
+      await pool.query('UPDATE Volunteer SET primary_ngo_id=? WHERE volunteer_id=?', [primary_ngo_id, volunteer_id]);
+
+      await pool.query('INSERT INTO Audit_Log (admin_id, action) VALUES (?, ?)', [
+        req.user.user_id,
+        `Set volunteer #${volunteer_id} primary_ngo_id -> ${primary_ngo_id === null ? 'NULL' : primary_ngo_id}`
+      ]);
+
+      return res.json({ message: 'Volunteer updated' });
+    }
+
+    return res.status(400).json({ message: 'Invalid type' });
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
+
 
 app.get('/api/category_breakdown', requireAuth, requireRole('admin'), async (req, res) => {
   try {

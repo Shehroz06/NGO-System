@@ -149,8 +149,7 @@
         <div class="form-group">
           <label>Account Type</label>
           <select id="reg-role">
-            <option value="user">user</option>
-            <option value="admin">Admin</option>
+            <option value="user">User</option>
             <option value="staff">NGO Staff</option>
           </select>
         </div>
@@ -186,7 +185,7 @@
     const role = (localStorage.getItem("userRole") || "").toLowerCase();
     if (token && role) {
       const target =
-        (role === "admin") ? "/admin/admin-dashboard.html" :
+        (role === "admin") ? "/admin/admin.html" :
         (role === "staff") ? "/staff/staff-dashboard.html" :
         "/dashboard.html";
       window.location.href = target;
@@ -251,7 +250,7 @@
         return;
       }
 
-      // 2) if staff: auto-login then go to add_ngo (DB-backed)
+      // 2) if staff: auto-login then go to register_ngo (DB-backed)
       if (role === "staff") {
         const { res: loginRes, data: loginData } = await postJson("/api/auth/login", { email, password });
 
@@ -268,7 +267,7 @@
           email
         });
 
-        window.location.href = "/add_ngo.html";
+        window.location.href = "/register_ngo.html";
         return;
       }
 

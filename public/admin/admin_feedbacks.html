@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script src="/assets/js/auth.js"></script>
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -89,79 +91,89 @@
     </main>
   </div>
 
-  <script src="/assets/js/auth.js"></script>
-  <script>
-    if(!window.auth.requireRole('admin')) { /* redirected */ }
+<script src="/assets/js/auth.js"></script>
 
-    const rowsEl = document.getElementById('rows');
-    const ngoSel = document.getElementById('ngo');
+<script>
+  if(!window.auth.requireRole('admin')) { /* redirected */ }
 
-    const safeText = (v) => (v ?? '').toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const rowsEl = document.getElementById('rows');
+  const ngoSel = document.getElementById('ngo');
 
-    async function api(url){
-      const res = await fetch(url, { headers: window.auth.headers() });
-      const data = await res.json().catch(()=>[]);
-      if(!res.ok) throw new Error((data && data.message) || 'Request failed');
-      return data;
-    }
+  const safeText = (v) => (v ?? '').toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
-    async function loadNgos(){
-      try{
-        const ngos = await fetch('/api/ngos').then(r=>r.json()).catch(()=>[]);
-        ngos.forEach(n=>{
-          const opt = document.createElement('option');
-          opt.value = (n.id ?? n.ngo_id ?? '');
-          opt.textContent = n.name ?? 'NGO';
-          ngoSel.appendChild(opt);
-        });
-      }catch{}
-    }
+  async function api(url){
+    const res = await fetch(url, { headers: window.auth.headers() });
+    const data = await res.json().catch(()=>[]);
+    if(!res.ok) throw new Error((data && data.message) || 'Request failed');
+    return data;
+  }
 
-    function rowHTML(f){
-      const dt = f.created_at ? new Date(f.created_at).toLocaleString() :
-                f.timestamp ? new Date(f.timestamp).toLocaleString() : '';
-      return `
-        <tr>
-          <td>${safeText(f.id)}</td>
-          <td>${safeText(f.user_name || '')}</td>
-          <td>${safeText(f.user_email || '')}</td>
-          <td>${safeText(f.ngo_name || '')}</td>
-          <td><span class="pill">${safeText(f.rating ?? '')}</span></td>
-          <td class="msg">${safeText(f.message || '')}</td>
-          <td>${safeText(dt)}</td>
-        </tr>
-      `;
-    }
+  async function loadNgos(){
+    try{
+      const ngos = await fetch('/api/ngos').then(r=>r.json()).catch(()=>[]);
+      ngos.forEach(n=>{
+        const opt = document.createElement('option');
+        opt.value = (n.id ?? n.ngo_id ?? '');
+        opt.textContent = n.name ?? 'NGO';
+        ngoSel.appendChild(opt);
+      });
+    }catch{}
+  }
 
-    async function load(){
-      const q = document.getElementById('q').value.trim();
-      const ngo_id = ngoSel.value;
+  function rowHTML(f){
+    const dt = f.created_at ? new Date(f.created_at).toLocaleString() :
+              f.timestamp ? new Date(f.timestamp).toLocaleString() : '';
+    return `
+      <tr>
+        <td>${safeText(f.id)}</td>
+        <td>${safeText(f.user_name || '')}</td>
+        <td>${safeText(f.user_email || '')}</td>
+        <td>${safeText(f.ngo_name || '')}</td>
+        <td><span class="pill">${safeText(f.rating ?? '')}</span></td>
+        <td class="msg">${safeText(f.message || '')}</td>
+        <td>${safeText(dt)}</td>
+      </tr>
+    `;
+  }
 
-      const url = `/api/admin/desk?kind=feedbacks`
-        + (q ? `&q=${encodeURIComponent(q)}` : '')
-        + (ngo_id ? `&ngo_id=${encodeURIComponent(ngo_id)}` : '');
+  async function load(){
+    const q = document.getElementById('q').value.trim();
+    const ngo_id = ngoSel.value;
 
-      rowsEl.innerHTML = `<tr><td colspan="7">Loading…</td></tr>`;
-      try{
-        const data = await api(url);
-        if(!data.length){
-          rowsEl.innerHTML = `<tr><td colspan="7">No feedback found.</td></tr>`;
-          return;
-        }
-        rowsEl.innerHTML = data.map(rowHTML).join('');
-      }catch(err){
-        rowsEl.innerHTML = `<tr><td colspan="7">${safeText(err.message || 'Failed')}</td></tr>`;
+    const url = `/api/feedbacks`
+      + `?q=${encodeURIComponent(q)}`
+      + (ngo_id ? `&ngo_id=${encodeURIComponent(ngo_id)}` : '');
+
+    rowsEl.innerHTML = `<tr><td colspan="7">Loading…</td></tr>`;
+    try{
+      const data = await api(url);
+      if(!data.length){
+        rowsEl.innerHTML = `<tr><td colspan="7">No feedback found.</td></tr>`;
+        return;
       }
+      rowsEl.innerHTML = data.map(rowHTML).join('');
+    }catch(err){
+      rowsEl.innerHTML = `<tr><td colspan="7">${safeText(err.message || 'Failed')}</td></tr>`;
     }
+  }
 
-    document.getElementById('btn-search').addEventListener('click', load);
-    document.getElementById('btn-reset').addEventListener('click', ()=>{
-      document.getElementById('q').value='';
-      ngoSel.value='';
-      load();
-    });
+  // ✅ FIXED BUTTON IDS
+  document.getElementById('btn-search').addEventListener('click', load);
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    document.getElementById('q').value = '';
+    ngoSel.value = '';
+    load();
+  });
 
-    loadNgos().then(load);
-  </script>
+  document.getElementById('q').addEventListener('keydown', (e)=>{ if(e.key==='Enter') load(); });
+  ngoSel.addEventListener('change', load);
+
+  (async function init(){
+    await loadNgos();
+    await load();
+  })();
+</script>
+
+
 </body>
 </html>

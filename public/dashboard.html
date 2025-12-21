@@ -179,7 +179,6 @@
   <header>
     <div class="logo">NGO Management System</div>
     <nav id="top-nav">
-      <a href="/home.html">Home</a>
       <a href="/dashboard.html" class="active">Dashboard</a>
       <a href="#" id="logout-link">Logout</a>
       <a href="/donate.html" class="donate-main-btn">Donate Now</a>
@@ -209,7 +208,6 @@
               <th>Cause Title</th>
               <th>Amount</th>
               <th>Method</th>
-              <th>Receipt</th>
             </tr>
           </thead>
           <tbody id="donation-history-body">
@@ -265,131 +263,287 @@
         </form>
       </section>
 
-      <section id="feedback" class="dashboard-section hidden">
-        <h3>Submit Feedback</h3>
-        <form id="feedback-form">
-          <div class="form-group">
-            <label>NGO</label>
-            <select id="feed-ngo" required>
-              <option value="">Select NGO</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Message</label>
-            <textarea id="feed-msg" rows="4" required></textarea>
-          </div>
-          <button type="submit" class="submit-btn">Send Feedback</button>
-          <p id="feed-status"></p>
-        </form>
-      </section>
+<section id="feedback" class="dashboard-section hidden">
+  <h3>Submit Feedback</h3>
+
+  <form id="feedback-form">
+    <div class="form-group">
+      <label>NGO</label>
+      <select id="feed-ngo" required>
+        <option value="">Select NGO</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Rating</label>
+      <select id="feed-rating" required>
+        <option value="">Select Rating</option>
+        <option value="5">★★★★★ Excellent</option>
+        <option value="4">★★★★ Good</option>
+        <option value="3">★★★ Average</option>
+        <option value="2">★★ Poor</option>
+        <option value="1">★ Very Bad</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Message</label>
+      <textarea id="feed-msg" rows="4" required></textarea>
+    </div>
+
+    <button type="submit" class="submit-btn">Send Feedback</button>
+    <p id="feed-status"></p>
+  </form>
+</section>
+
     </main>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const token = localStorage.getItem("authToken");
-      const role = localStorage.getItem("userRole");
-      const userName = localStorage.getItem("userName") || "User";
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem("authToken");
+  const role = (localStorage.getItem("userRole") || "").toLowerCase();
+  const userName = localStorage.getItem("userName") || "User";
 
-      if (!token) { window.location.href = "/login.html"; return; }
+  if (!token) { window.location.href = "/login.html"; return; }
+  if (role === "admin") { window.location.href = "/admin/admin.html"; return; }
+  if (role === "staff") { window.location.href = "/staff/staff-dashboard.html"; return; }
 
-      // ✅ admin goes to admin panel
-      if (role === "admin") {
-        window.location.href = "/admin/admin-dashboard.html";
-        return;
-      }
+  // UI
+  document.getElementById('welcome-msg').textContent = `Welcome back, ${userName}!`;
 
-      // user/volunteer allowed
-      document.getElementById('welcome-msg').textContent = `Welcome back, ${userName}!`;
+  // Logout
+  const logoutLink = document.getElementById("logout-link");
+  if (logoutLink) {
+    logoutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "/home.html";
+    });
+  }
 
-      document.getElementById("logout-link").addEventListener("click", (e) => {
-        e.preventDefault();
-        localStorage.clear();
-        window.location.href = "/home.html";
+  const authHeaders = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  };
+
+  // Tab Switching
+  const menuLinks = document.querySelectorAll(".sidebar-menu li a[data-target]");
+  const sections = document.querySelectorAll(".dashboard-section");
+
+  menuLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      const target = link.getAttribute("data-target");
+      sections.forEach(s => s.classList.add("hidden"));
+      document.getElementById(target).classList.remove("hidden");
+      menuLinks.forEach(l => l.classList.remove("active-menu"));
+      link.classList.add("active-menu");
+    });
+  });
+
+  // -----------------------
+  // Load NGOs into dropdowns
+  // -----------------------
+  async function loadNgos() {
+    try {
+      const res = await fetch("/api/ngos");
+      const ngos = await res.json().catch(() => []);
+      const vSel = document.getElementById("vol-ngo");
+      const fSel = document.getElementById("feed-ngo");
+
+      if (!Array.isArray(ngos) || !vSel || !fSel) return;
+
+      // reset to default option only
+      vSel.innerHTML = `<option value="">Select NGO</option>`;
+      fSel.innerHTML = `<option value="">Select NGO</option>`;
+
+      ngos.forEach(ngo => {
+        const id = ngo.id ?? ngo.ngo_id;
+        const name = ngo.name ?? "NGO";
+        const opt = document.createElement("option");
+        opt.value = String(id);
+        opt.textContent = name;
+
+        vSel.appendChild(opt.cloneNode(true));
+        fSel.appendChild(opt);
       });
+    } catch (e) {
+      // silently fail (UI stays with "Select NGO")
+      console.error("Failed to load NGOs", e);
+    }
+  }
 
-      const authHeaders = {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+  // -----------------------
+  // Donation History
+  // -----------------------
+fetch("/api/donations/history", { headers: authHeaders })
+  .then(res => res.json())
+  .then(data => {
+    const tbody = document.getElementById("donation-history-body");
+    if (!tbody) return;
+
+    if (!Array.isArray(data) || !data.length) {
+      tbody.innerHTML = "<tr><td colspan='5'>No donations found.</td></tr>";
+      return;
+    }
+
+    tbody.innerHTML = "";
+
+    data.forEach(item => {
+      const dt = item.date || item.donation_date || item.created_at || Date.now();
+
+      // ✅ USE API FIELD (not DB guess)
+      const method =
+        item.payment_method === "online" ? "Online Payment" :
+        item.payment_method === "physical" ? "Physical Payment" :
+        "—";
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${new Date(dt).toLocaleDateString()}</td>
+          <td><strong>${item.cause_title || item.causeTitle || item.title || "—"}</strong></td>
+          <td>PKR ${(Number(item.amount || 0)).toLocaleString()}</td>
+          <td>${method}</td>
+        </tr>
+      `;
+    });
+  })
+  .catch(() => {
+    const tbody = document.getElementById("donation-history-body");
+    if (tbody) {
+      tbody.innerHTML =
+        "<tr><td colspan='5'>Unable to load history (backend issue).</td></tr>";
+    }
+  });
+
+
+  // -----------------------
+  // Profile Update (frontend-only)
+  // -----------------------
+  const profName = document.getElementById('prof-name');
+  if (profName) profName.value = userName;
+
+  const profileForm = document.getElementById('profile-form');
+  if (profileForm) {
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newName = (document.getElementById('prof-name')?.value || "").trim();
+      if (newName) localStorage.setItem("userName", newName);
+
+      const status = document.getElementById('profile-status');
+      if (status) {
+        status.textContent = "Profile updated successfully!";
+        status.style.color = "green";
+      }
+      setTimeout(() => location.reload(), 800);
+    });
+  }
+
+  // -----------------------
+  // Volunteer Submit
+  // Compatible with server: expects { skills, ngo_id, availability }
+  // -----------------------
+  const volunteerForm = document.getElementById('volunteer-form');
+  if (volunteerForm) {
+    volunteerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const statusEl = document.getElementById('vol-status');
+      if (statusEl) statusEl.textContent = "Sending...";
+
+      const body = {
+        skills: (document.getElementById('vol-skill')?.value || "").trim(),
+        ngo_id: Number(document.getElementById('vol-ngo')?.value || 0),
+        availability: (document.getElementById('vol-avail')?.value || "").trim()
       };
 
-      // Tab Switching
-      const menuLinks = document.querySelectorAll(".sidebar-menu li a[data-target]");
-      const sections = document.querySelectorAll(".dashboard-section");
-
-      menuLinks.forEach(link => {
-        link.addEventListener("click", () => {
-          const target = link.getAttribute("data-target");
-          sections.forEach(s => s.classList.add("hidden"));
-          document.getElementById(target).classList.remove("hidden");
-          menuLinks.forEach(l => l.classList.remove("active-menu"));
-          link.classList.add("active-menu");
-        });
-      });
-
-      // Profile Update (frontend-only)
-      document.getElementById('prof-name').value = userName;
-      document.getElementById('profile-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newName = document.getElementById('prof-name').value;
-        localStorage.setItem("userName", newName);
-        document.getElementById('profile-status').textContent = "Profile updated successfully!";
-        document.getElementById('profile-status').style.color = "green";
-        setTimeout(() => location.reload(), 800);
-      });
-
-      // Donation History (API)
-      fetch("/api/donations/history", { headers: authHeaders })
-        .then(res => res.json())
-        .then(data => {
-          const tbody = document.getElementById("donation-history-body");
-          tbody.innerHTML = data.length ? "" : "<tr><td colspan='5'>No donations found.</td></tr>";
-          data.forEach(item => {
-            tbody.innerHTML += `<tr>
-          <td>${new Date(item.date || item.donation_date).toLocaleDateString()}</td>
-          <td><strong>${item.causeTitle || item.title || "—"}</strong></td>
-          <td>PKR ${(item.amount || 0).toLocaleString()}</td>
-          <td>${item.method || "—"}</td>
-          <td><a href="#" class="receipt-link">View PDF</a></td>
-        </tr>`;
-          });
-        })
-        .catch(() => {
-          document.getElementById("donation-history-body").innerHTML =
-            "<tr><td colspan='5'>Unable to load history (backend issue).</td></tr>";
-        });
-
-      // NGOs
-      fetch("/api/ngos")
-        .then(res => res.json())
-        .then(ngos => {
-          const vSel = document.getElementById("vol-ngo");
-          const fSel = document.getElementById("feed-ngo");
-          ngos.forEach(ngo => {
-            const id = ngo.ngo_id ?? ngo.id;
-            const opt = `<option value="${id}">${ngo.name}</option>`;
-            vSel.innerHTML += opt;
-            fSel.innerHTML += opt;
-          });
-        });
-
-      // Volunteer Form (API placeholder)
-      document.getElementById('volunteer-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+      try {
         const res = await fetch('/api/user/register_volunteer', {
           method: 'POST',
           headers: authHeaders,
-          body: JSON.stringify({
-            name: document.getElementById('vol-name').value,
-            skill: document.getElementById('vol-skill').value,
-            ngoId: document.getElementById('vol-ngo').value,
-            availability: document.getElementById('vol-avail').value
-          })
+          body: JSON.stringify(body)
         });
-        document.getElementById('vol-status').textContent = res.ok ? "Application sent!" : "Failed to send.";
-      });
+        const data = await res.json().catch(() => ({}));
+
+        if (statusEl) {
+          statusEl.textContent = res.ok ? "Application sent!" : (data.message || "Failed to send.");
+          statusEl.style.color = res.ok ? "green" : "red";
+        }
+
+        if (res.ok) {
+          volunteerForm.reset();
+          setTimeout(() => location.reload(), 700);
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = "Network error.";
+          statusEl.style.color = "red";
+        }
+      }
     });
-  </script>
+  }
+
+// -----------------------
+// Feedback Submit (RATING REQUIRED)
+// -----------------------
+const feedbackForm = document.getElementById('feedback-form');
+if (feedbackForm) {
+  feedbackForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const statusEl = document.getElementById('feed-status');
+
+    const ngoId = document.getElementById('feed-ngo')?.value;
+    const rating = document.getElementById('feed-rating')?.value;
+    const message = document.getElementById('feed-msg')?.value.trim();
+
+    if (!ngoId || !rating || !message) {
+      statusEl.textContent = "Please fill all fields including rating.";
+      statusEl.style.color = "red";
+      return;
+    }
+
+    statusEl.textContent = "Sending...";
+    statusEl.style.color = "#333";
+
+    try {
+      const res = await fetch('/api/user/submit_feedback', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          ngo_id: Number(ngoId),
+          rating: Number(rating),
+          message
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        statusEl.textContent = "Feedback submitted successfully!";
+        statusEl.style.color = "green";
+        feedbackForm.reset();
+        setTimeout(() => location.reload(), 700);
+      } else {
+        statusEl.textContent = data.message || "Failed to submit feedback.";
+        statusEl.style.color = "red";
+      }
+    } catch (err) {
+      statusEl.textContent = "Network error.";
+      statusEl.style.color = "red";
+    }
+  });
+}
+// Auto-fill Volunteer Full Name
+const volNameInput = document.getElementById('vol-name');
+if (volNameInput) {
+  volNameInput.value = userName;
+}
+
+  // Load NGO lists last (after DOM is ready)
+  loadNgos();
+});
+</script>
 
 </body>
 

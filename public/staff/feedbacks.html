@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const role  = (localStorage.getItem("userRole") || "").toLowerCase();
 
   if (!token) { window.location.href = "/login.html"; return; }
-  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return; }
+  if (role === "admin") { window.location.href = "/admin/admin.html"; return; }
   if (role !== "staff") { window.location.href = "/dashboard.html"; return; }
 
   // logout
@@ -270,7 +270,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // ensure staff has NGO
       await api("/api/staff/me");
 
-      // fetch staff NGO feedbacks from DB (you'll add this endpoint below)
       cached = await api("/api/staff/feedbacks");
       render();
     } catch (err) {

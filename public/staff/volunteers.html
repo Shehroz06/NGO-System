@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const role  = (localStorage.getItem("userRole") || "").toLowerCase();
 
   if (!token) { window.location.href = "/login.html"; return; }
-  if (role === "admin") { window.location.href = "/admin/admin-dashboard.html"; return; }
+  if (role === "admin") { window.location.href = "/admin/admin.html"; return; }
   if (role !== "staff") { window.location.href = "/dashboard.html"; return; }
 
   // logout

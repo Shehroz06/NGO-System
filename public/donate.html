@@ -1,78 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Make a Donation - NGO Management System</title>
+
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; }
-    .donation-container { max-width: 600px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .donation-container { max-width: 650px; margin: 50px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
     h2 { color: #1a5632; margin-top: 0; }
     .form-group { margin-bottom: 20px; }
     label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
-    input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+    input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
     .help-text { font-size: 12px; color: #666; margin-top: 4px; }
+    .radio-group { display: flex; gap: 20px; margin-top: 8px; flex-wrap: wrap; }
+    .radio-group label { font-weight: normal; cursor: pointer; }
     button.submit-btn { width: 100%; padding: 15px; background-color: #1a5632; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; }
     button.submit-btn:hover { background-color: #2b7049; }
+    .note { background:#f3fff6; border:1px solid #cfe9d7; padding:10px 12px; border-radius:8px; color:#1a5632; margin: 10px 0 18px; }
+    .err { color: #b00020; margin-top: 10px; }
   </style>
 </head>
+
 <body>
   <div class="donation-container">
     <h2>Support Our Cause</h2>
     <p>Your contribution makes a real difference.</p>
 
-    <form action="/process-donation" method="POST" id="donation-form">
+    <div id="login-note" class="note" style="display:none;"></div>
+
+    <form id="donation-form">
+      <!-- NGO -->
       <div class="form-group">
-        <label for="donation-cause">Purpose of Donation / Cause Name</label>
-        <input type="text" id="donation-cause" name="cause_name"
-          placeholder="e.g., Flood Relief, Education Fund, General Charity" required>
-        <p class="help-text">Mention a specific project or leave as 'General' if unsure.</p>
+        <label for="ngo-select">Select NGO <span style="color:red">*</span></label>
+        <select id="ngo-select" required>
+          <option value="">Loading NGOs...</option>
+        </select>
+        <p class="help-text">If NGOs are not loading, open this page from the server URL (not file://).</p>
       </div>
 
+      <!-- Cause -->
       <div class="form-group">
-        <label>Amount (PKR)</label>
-        <input type="number" name="amount" placeholder="Enter amount" required min="1">
+        <label for="cause-select">Select Cause <span style="color:red">*</span></label>
+        <select id="cause-select" required disabled>
+          <option value="">Select NGO first</option>
+        </select>
+        <p class="help-text">Causes will load after selecting an NGO.</p>
       </div>
 
+      <!-- Amount -->
       <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" name="name" placeholder="Enter your full name" required>
+        <label>Amount (PKR) <span style="color:red">*</span></label>
+        <input type="number" id="amount" placeholder="Enter amount" required min="1" />
       </div>
 
+      <!-- Name (Guest only; logged-in will auto-fill) -->
+      <div class="form-group" id="name-wrap">
+        <label>Full Name <span style="color:red">*</span></label>
+        <input type="text" id="name" placeholder="Enter your full name" />
+        <p class="help-text">If you are logged in, we’ll use your profile name automatically.</p>
+      </div>
+
+      <!-- Email (Guest only; logged-in will auto-fill) -->
+      <div class="form-group" id="email-wrap">
+        <label>Email Address <span style="color:red">*</span></label>
+        <input type="email" id="email" placeholder="Enter your email" />
+        <p class="help-text">If you are logged in, we’ll use your profile email automatically.</p>
+      </div>
+
+      <!-- Payment -->
       <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" name="email" placeholder="Enter your email" required>
+        <label>Payment Method <span style="color:red">*</span></label>
+        <div class="radio-group">
+          <label><input type="radio" name="payment_method" value="online" required /> Pay Online</label>
+          <label><input type="radio" name="payment_method" value="physical" /> Pay Physically</label>
+        </div>
+        <p class="help-text">Online payment integration can be added later; we still record your donation request now.</p>
       </div>
 
       <button type="submit" class="submit-btn">Donate Now</button>
+      <div id="status" class="err"></div>
     </form>
   </div>
 
-<script>
-  document.getElementById('donation-form').addEventListener('submit', async (e) => {
-    e.preventDefault(); // page ko immediate refresh se roke
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const ngoSelect = document.getElementById("ngo-select");
+      const causeSelect = document.getElementById("cause-select");
+      const statusEl = document.getElementById("status");
 
-    const form = e.target;
-    const formData = new FormData(form);
+      const token = localStorage.getItem("authToken");
+      let loggedInUser = null;
 
-    try {
-      const res = await fetch('/process-donation', {
-        method: 'POST',
-        body: new URLSearchParams(formData), // sends like normal form
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      // ---- If logged in, pull profile and use it ----
+      if (token) {
+        try {
+          const meRes = await fetch("/api/user/me", {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          if (meRes.ok) {
+            loggedInUser = await meRes.json();
+            document.getElementById("login-note").style.display = "block";
+            document.getElementById("login-note").textContent =
+              `Logged in as ${loggedInUser.name} (${loggedInUser.email})`;
+
+            // hide guest name/email inputs
+            document.getElementById("name-wrap").style.display = "none";
+            document.getElementById("email-wrap").style.display = "none";
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      // ---- Load NGOs ----
+      async function loadNgos() {
+        statusEl.textContent = "";
+        try {
+          const res = await fetch("/api/ngos");
+          const data = await res.json().catch(() => []);
+          if (!res.ok) throw new Error(data.message || "Failed to load NGOs");
+
+          ngoSelect.innerHTML = `<option value="">Select NGO</option>`;
+          data.forEach(ngo => {
+            const opt = document.createElement("option");
+            opt.value = ngo.id;
+            opt.textContent = ngo.name;
+            ngoSelect.appendChild(opt);
+          });
+        } catch (err) {
+          ngoSelect.innerHTML = `<option value="">Failed to load NGOs</option>`;
+          statusEl.textContent =
+            "Failed to load NGOs. Make sure you opened this page from http://localhost:3000 (not file://) and your server is running.";
+          console.error(err);
+        }
+      }
+
+      // ---- Load Causes for selected NGO ----
+      async function loadCausesForNgo(ngoId) {
+        causeSelect.disabled = true;
+        causeSelect.innerHTML = `<option value="">Loading causes...</option>`;
+        try {
+          const res = await fetch(`/api/ngos/${encodeURIComponent(ngoId)}/causes`);
+          const data = await res.json().catch(() => []);
+          if (!res.ok) throw new Error(data.message || "Failed to load causes");
+
+          causeSelect.innerHTML = `<option value="">Select Cause</option>`;
+          data.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.id;
+            opt.textContent = c.title;
+            causeSelect.appendChild(opt);
+          });
+          causeSelect.disabled = false;
+        } catch (err) {
+          causeSelect.innerHTML = `<option value="">Failed to load causes</option>`;
+          console.error(err);
+        }
+      }
+
+      ngoSelect.addEventListener("change", () => {
+        const ngoId = ngoSelect.value;
+        statusEl.textContent = "";
+        if (!ngoId) {
+          causeSelect.disabled = true;
+          causeSelect.innerHTML = `<option value="">Select NGO first</option>`;
+          return;
+        }
+        loadCausesForNgo(ngoId);
       });
 
-      if (!res.ok) throw new Error('Donation failed');
+      // ---- Submit Donation ----
+      document.getElementById("donation-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        statusEl.textContent = "";
 
-      // record save ho gaya, ab reset + refresh
-      form.reset();
-      location.reload(); // page refresh
-    } catch (err) {
-      alert('Donation does not submitted, Check Server.');
-      console.error(err);
-    }
-  });
-</script>
+        const ngo_id = ngoSelect.value;
+        const cause_id = causeSelect.value;
+        const amount = Number(document.getElementById("amount").value || 0);
+        const payment_method = document.querySelector("input[name='payment_method']:checked")?.value;
 
+        if (!ngo_id || !cause_id || !amount || amount <= 0 || !payment_method) {
+          statusEl.textContent = "Please fill NGO, Cause, Amount and Payment Method.";
+          return;
+        }
+
+        try {
+          // If logged in: record to user profile using /api/donations
+          if (token && loggedInUser) {
+            const res = await fetch("/api/donations", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ cause_id: Number(cause_id), amount, payment_method })
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.message || "Donation failed");
+
+            alert("Donation recorded in your profile!");
+            location.reload();
+            return;
+          }
+
+          // Guest donation: uses /process-donation and will create/find a user by email
+          const guestName = (document.getElementById("name").value || "").trim();
+          const guestEmail = (document.getElementById("email").value || "").trim();
+
+          if (!guestEmail) { statusEl.textContent = "Email is required for guest donation."; return; }
+
+          const res = await fetch("/process-donation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ngo_id: Number(ngo_id),
+              cause_id: Number(cause_id),
+              amount,
+              name: guestName,         // if empty -> server will store Anonymous
+              email: guestEmail,
+              payment_method
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.message || "Donation failed");
+
+          alert("Donation submitted successfully!");
+          location.reload();
+        } catch (err) {
+          statusEl.textContent = err.message || "Donation failed.";
+          console.error(err);
+        }
+      });
+
+      await loadNgos();
+    });
+  </script>
 </body>
 </html>
