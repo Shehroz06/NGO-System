@@ -1065,6 +1065,113 @@ app.get('/api/admin/ops', requireAuth, requireRole('admin'), async (req, res) =>
       const [rows] = await pool.query(sql, params);
       return res.json({ items: rows });
     }
+// Staff: list assignments for a given event (show volunteers already taken in this event)
+app.get('/api/staff/events/:eventId/volunteers', requireAuth, requireRole('staff'), async (req, res) => {
+  try {
+    const ctx = await getStaffContext(req.user.user_id);
+    if (!ctx) return res.status(404).json({ message: 'Staff record not found (assign NGO first).' });
+
+    const eventId = Number(req.params.eventId);
+    if (!eventId) return res.status(400).json({ message: 'Invalid eventId' });
+
+    // ensure event belongs to staff NGO
+    const [[ev]] = await pool.query('SELECT ngo_id FROM Event WHERE event_id=? LIMIT 1', [eventId]);
+    if (!ev) return res.status(404).json({ message: 'Event not found' });
+    if (Number(ev.ngo_id) !== Number(ctx.ngo_id)) return res.status(403).json({ message: 'Forbidden' });
+
+    const [rows] = await pool.query(`
+      SELECT
+        ve.event_id,
+        ve.volunteer_id,
+        ve.task,
+        ve.shift,
+        ve.assigned_at,
+        u.name AS volunteer_name,
+        u.email AS volunteer_email,
+        v.skill AS volunteer_skill
+      FROM Volunteer_Event ve
+      JOIN Volunteer v ON v.volunteer_id = ve.volunteer_id
+      JOIN Users u ON u.user_id = v.user_id
+      WHERE ve.event_id = ?
+      ORDER BY ve.assigned_at DESC
+    `, [eventId]);
+
+    return res.json(rows);
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
+
+// Staff: assign volunteer to event
+app.post('/api/staff/events/:eventId/volunteers', requireAuth, requireRole('staff'), async (req, res) => {
+  try {
+    const ctx = await getStaffContext(req.user.user_id);
+    if (!ctx) return res.status(404).json({ message: 'Staff record not found (assign NGO first).' });
+
+    const eventId = Number(req.params.eventId);
+    const volunteer_id = Number(req.body.volunteer_id);
+    const task = (req.body.task || '').toString().trim();
+    const shift = (req.body.shift || '').toString().trim();
+
+    if (!eventId || !volunteer_id || !task) {
+      return res.status(400).json({ message: 'eventId, volunteer_id, and task are required' });
+    }
+
+    // ensure event belongs to staff NGO
+    const [[ev]] = await pool.query('SELECT ngo_id FROM Event WHERE event_id=? LIMIT 1', [eventId]);
+    if (!ev) return res.status(404).json({ message: 'Event not found' });
+    if (Number(ev.ngo_id) !== Number(ctx.ngo_id)) return res.status(403).json({ message: 'Forbidden' });
+
+    // ensure volunteer belongs to staff NGO (primary_ngo_id)
+    const [[vol]] = await pool.query('SELECT primary_ngo_id FROM Volunteer WHERE volunteer_id=? LIMIT 1', [volunteer_id]);
+    if (!vol) return res.status(404).json({ message: 'Volunteer not found' });
+    if (Number(vol.primary_ngo_id) !== Number(ctx.ngo_id)) {
+      // optional: allow if volunteer is in Volunteer_NGO junction
+      try {
+        const [[ok]] = await pool.query(
+          'SELECT 1 AS ok FROM Volunteer_NGO WHERE volunteer_id=? AND ngo_id=? LIMIT 1',
+          [volunteer_id, ctx.ngo_id]
+        );
+        if (!ok) return res.status(403).json({ message: 'Volunteer is not registered with your NGO' });
+      } catch {
+        return res.status(403).json({ message: 'Volunteer is not registered with your NGO' });
+      }
+    }
+
+    // Upsert assignment (unique(event_id, volunteer_id) recommended)
+    await pool.query(`
+      INSERT INTO Volunteer_Event (event_id, volunteer_id, task, shift)
+      VALUES (?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE task=VALUES(task), shift=VALUES(shift)
+    `, [eventId, volunteer_id, task, shift || null]);
+
+    return res.status(201).json({ message: 'Volunteer assigned' });
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
+
+// Staff: remove assignment
+app.delete('/api/staff/events/:eventId/volunteers/:volunteerId', requireAuth, requireRole('staff'), async (req, res) => {
+  try {
+    const ctx = await getStaffContext(req.user.user_id);
+    if (!ctx) return res.status(404).json({ message: 'Staff record not found (assign NGO first).' });
+
+    const eventId = Number(req.params.eventId);
+    const volunteerId = Number(req.params.volunteerId);
+    if (!eventId || !volunteerId) return res.status(400).json({ message: 'Invalid ids' });
+
+    // ensure event belongs to staff NGO
+    const [[ev]] = await pool.query('SELECT ngo_id FROM Event WHERE event_id=? LIMIT 1', [eventId]);
+    if (!ev) return res.status(404).json({ message: 'Event not found' });
+    if (Number(ev.ngo_id) !== Number(ctx.ngo_id)) return res.status(403).json({ message: 'Forbidden' });
+
+    await pool.query('DELETE FROM Volunteer_Event WHERE event_id=? AND volunteer_id=?', [eventId, volunteerId]);
+    return res.json({ message: 'Assignment removed' });
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
 
     // ---- VOLUNTEERS LIST ----
     if (type === 'volunteers') {
@@ -1100,6 +1207,85 @@ app.get('/api/admin/ops', requireAuth, requireRole('admin'), async (req, res) =>
     }
 
     return res.status(400).json({ message: 'Invalid type' });
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
+// ---------- ADMIN DESK (compatibility for admin_volunteers.html) ----------
+// admin_volunteers.html calls: /api/admin/desk?kind=volunteers&q=&ngo_id=
+// It expects a plain ARRAY (not {items: ...})
+app.get('/api/admin/desk', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const kind = String(req.query.kind || '').toLowerCase();
+    const ngo_id = req.query.ngo_id ? Number(req.query.ngo_id) : null;
+    const q = String(req.query.q || '').trim();
+
+    if (!kind) return res.status(400).json({ message: 'kind is required' });
+
+    // ---- VOLUNTEERS (Admin Volunteers page) ----
+    if (kind === 'volunteers') {
+      const where = [];
+      const params = [];
+
+      if (ngo_id) {
+        // primary NGO filter (matches your existing admin ops logic)
+        where.push('v.primary_ngo_id = ?');
+        params.push(ngo_id);
+      }
+
+      if (q) {
+        const like = `%${q}%`;
+        where.push('(u.name LIKE ? OR u.email LIKE ? OR v.skill LIKE ? OR v.availability LIKE ? OR n.name LIKE ?)');
+        params.push(like, like, like, like, like);
+      }
+
+      const sql = `
+        SELECT
+          v.volunteer_id,
+          u.name  AS user_name,
+          u.email AS user_email,
+          n.name  AS ngo_name,
+          v.skill AS skills,
+          v.availability
+        FROM Volunteer v
+        JOIN Users u ON u.user_id = v.user_id
+        LEFT JOIN NGO n ON n.ngo_id = v.primary_ngo_id
+        ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+        ORDER BY v.volunteer_id DESC
+        LIMIT 500
+      `;
+
+      const [rows] = await pool.query(sql, params);
+      return res.json(rows); // IMPORTANT: plain array (frontend expects data.map)
+    }
+
+    return res.status(400).json({ message: 'Invalid kind' });
+  } catch (e) {
+    return res.status(500).json({ message: 'DB error', error: e.message });
+  }
+});
+// Staff: total donations collected for this staff's NGO (approved causes only)
+app.get('/api/staff/ngo-donations-total', requireAuth, requireRole('staff'), async (req, res) => {
+  try {
+    // staff -> ngo
+    const [[staff]] = await pool.query(
+      `SELECT ngo_id FROM Staff WHERE user_id=? LIMIT 1`,
+      [req.user.user_id]
+    );
+    if (!staff) return res.status(404).json({ message: 'Staff record not found (assign NGO first).' });
+
+    // total collected for that NGO via Donation -> Donation_Cause -> Cause
+    const [[row]] = await pool.query(
+      `
+      SELECT COALESCE(SUM(dc.amount_allocated), 0) AS total_collected
+      FROM Donation_Cause dc
+      JOIN Cause c ON c.cause_id = dc.cause_id
+      WHERE c.ngo_id = ? AND c.status='approved'
+      `,
+      [staff.ngo_id]
+    );
+
+    return res.json({ total_collected: row?.total_collected ?? 0 });
   } catch (e) {
     return res.status(500).json({ message: 'DB error', error: e.message });
   }

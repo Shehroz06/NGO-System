@@ -11,11 +11,13 @@
       margin: 0;
       padding: 0;
       background-color: #f4f7f6;
-      color: #333;
     }
-
+    a{
+      text-decoration: none;
+      color: white;
+    }
     header {
-      background-color: #1a5632;
+      background-color: #70bfec;
       color: white;
       padding: 15px 50px;
       display: flex;
@@ -41,88 +43,74 @@
 
     nav a:hover,
     nav a.active {
-      background-color: #2b7049;
+      background-color: #000000;
     }
 
-    .donate-main-btn { background-color: #ff6347; color: white !important; font-weight: bold; }
 
-    .container {
-      max-width: 1100px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    h1 {
-      color: #1a5632;
-      border-bottom: 2px solid #ddd;
-      padding-bottom: 10px;
-      margin-bottom: 30px;
-    }
-
-    .cause-card {
-      background-color: white;
-      border-radius: 12px;
-      padding: 30px;
-      margin-bottom: 30px;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-      border: 1px solid #eee;
-    }
-
-    .cause-title {
-      color: #1a5632;
-      margin-top: 0;
-      font-size: 24px;
-    }
-
-    .ngo-name {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    .description {
-      line-height: 1.7;
-      margin-bottom: 20px;
-      color: #555;
-    }
-
-    .progress-bar-container {
-      background-color: #e9ecef;
-      border-radius: 10px;
-      height: 18px;
-      overflow: hidden;
-      margin-bottom: 15px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      background-color: #4CAF50;
-      transition: width 0.6s ease;
-    }
-
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      font-size: 15px;
-      margin-bottom: 25px;
-      font-weight: 500;
-    }
-
-    .donate-btn {
+    .donate-main-btn {
       display: inline-block;
-      background-color: #f4a261;
-      color: white;
+      /* background-color: #f4a261; */
+      cursor: pointer;
+
+  background-color: #ff6347; color: white !important; font-weight: bold; 
+  transition: background-color 1s ease, color 0.1s ease; 
       padding: 12px 25px;
       text-decoration: none;
       border-radius: 6px;
       font-weight: bold;
       transition: background-color 0.3s;
-    }
 
+    }
     .donate-btn:hover {
-      background-color: #e76f51;
-    }
+     
+       border: 0.1pt solid black;
 
+  color: white;
+  background-color: rgb(20, 20, 20);
+    }
+    .landing-section{
+      display: flex;
+      justify-content: space-between;
+    }
+    .landing-section .text-container{
+      color:  black;
+      padding-right:1% ;
+      /* padding-left: 1%; */
+    }
+    .landing-section .text-container h1{
+      font-size: 4.5vw;
+      padding-left: 5%;
+      margin-bottom: 0%;
+      padding-bottom: 0%;
+    }
+    .landing-section .text-container p{
+      font-size: 1.5vw;
+      opacity: 0.6;
+      padding-left: 5%;
+    }
+    .landing-section .text-container h3{
+      font-size: 1.2vw;
+      color: white;
+      background-color: #70bfec;
+
+      width: 17%;
+      margin-left: 8%;
+      cursor: pointer;
+      padding: 2% 2%;
+      border-radius: 5vh  ;
+  transition: background-color 1s ease, color 0.1s ease; 
+
+
+    }
+    .landing-section .text-container h3:hover{
+      color: white;
+  background-color: black;
+
+    }
+    img{
+      width: 50vw;
+      height: 70vh;
+    }
     footer {
       text-align: center;
       padding: 40px 0;
@@ -142,62 +130,20 @@
       <a href="/donate.html" class="donate-main-btn">Donate Now</a>
     </nav>
   </header>
-
+  <body>
+    <section class="landing-section">
+      <div class="text-container">
+        <h1>"Together for making  a brighter future"</h1>
+        <p>Together, we can make a real impact in communites around  the world. Make an NGO today.</p>
+        <h3><a href="/login.html">Register Now</a></h3>
+      </div>
+      <img src="./ngo.jpg"/>
+    </section>
+  </body>
 
   <footer>
     <p>&copy; 2025 NGO Management System</p>
   </footer>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const role = localStorage.getItem('userRole');
-      const token = localStorage.getItem('authToken');
-      const navbar = document.getElementById('navbar');
-
-
-      // causes
-      fetch("/api/causes")
-        .then(res => { if (!res.ok) throw new Error("Network response was not ok"); return res.json(); })
-        .then(causes => {
-          const container = document.getElementById("cause-container");
-          container.innerHTML = "";
-
-          causes.forEach(cause => {
-            const id = cause.cause_id ?? cause.id;
-            const goal = cause.goal_amount ?? cause.goal;
-            const collected = cause.collected ?? 0; // api dependent
-
-            const progress = goal ? Math.round((collected / goal) * 100) : 0;
-
-            container.innerHTML += `
-          <div class="cause-card">
-            <h2 class="cause-title">${cause.title}</h2>
-            <p class="ngo-name">Managed by: <b>${cause.ngo ?? cause.ngo_name ?? ''}</b></p>
-            <p class="description">${cause.description || ""}</p>
-
-            <div class="progress-bar-container">
-              <div class="progress-bar" style="width: ${progress}%"></div>
-            </div>
-
-            <div class="stats">
-              <span>Goal: PKR ${Number(goal || 0).toLocaleString()}</span>
-              <span>Raised: PKR ${Number(collected || 0).toLocaleString()} (${progress}%)</span>
-            </div>
-
-            <!-- donate param consistent: cause_id -->
-            <a href="/donate.html?cause_id=${id}" class="donate-btn">Contribute Now</a>
-          </div>
-        `;
-          });
-        })
-        .catch(err => {
-          console.error("Error fetching causes:", err);
-          document.getElementById("cause-container").innerHTML =
-            `<p style="color: red; text-align: center;">Unable to load causes. Please ensure the backend server is running.</p>`;
-        });
-    });
-  </script>
-
 </body>
 
 </html>

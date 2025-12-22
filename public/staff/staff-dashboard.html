@@ -64,16 +64,16 @@
       <h2>NGO Staff</h2>
       <ul class="sidebar-menu">
         <li><a  href="/staff/staff-dashboard.html" class="active-menu">Overview</a></li>
-        <li><a href="/staff/events.html">events</a></li>
-        <li><a href="/staff/volunteers.html">volunteers</a></li>
-        <li><a href="/staff/causes.html">causes</a></li>
+        <li><a href="/staff/events.html">Events</a></li>
+        <li><a href="/staff/volunteers.html">Volunteers</a></li>
+        <li><a href="/staff/causes.html">Causes</a></li>
         <li><a href="/staff/feedbacks.html">Feedback</a></li>
       </ul>
     </aside>
 
     <main class="dashboard-content">
       <h1 id="welcome-msg">Welcome!</h1>
-      <p class="muted">Staff overview (demo data saved in localStorage).</p>
+
 
       <section class="dashboard-section">
         <h3>Quick Overview</h3>
@@ -91,18 +91,14 @@
             <p class="card-meta" id="stat-causes">0</p>
           </div>
           <div class="card">
-            <p class="card-title">Assignments</p>
-            <p class="card-meta" id="stat-assignments">0</p>
+            <p class="card-title">Total Donations</p>
+            <p class="card-meta" id="stat-donations">0</p>
           </div>
         </div>
       </section>
 
 
-      <section class="dashboard-section">
-        <h3>My NGOs</h3>
-        <p style="color:#666;margin-top:0">Only NGOs assigned to your staff account are shown here.</p>
-        <ul id="my-ngos" style="padding-left:18px;margin:0"></ul>
-      </section>
+      
 
       <section class="dashboard-section">
         <h3>Recent events</h3>
@@ -152,7 +148,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  // helpers
+  const safeText = (v) =>
+    (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
   async function api(path, options = {}) {
     const res = await fetch(path, {
@@ -173,10 +171,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const welcome = document.getElementById("welcome-msg");
   if (welcome) welcome.textContent = `Welcome back, ${userName}!`;
 
+  // stats
   const statActiveEvents = document.getElementById("stat-active-events");
   const statTotalEvents  = document.getElementById("stat-total-events");
   const statCauses       = document.getElementById("stat-causes");
-  const statAssignments  = document.getElementById("stat-assignments"); // you don’t have DB API for this yet
+  const statDonations    = document.getElementById("stat-donations"); // ✅ TOTAL DONATIONS
   const tbody            = document.getElementById("recent-events");
 
   function renderRecentEvents(events) {
@@ -186,18 +185,23 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    tbody.innerHTML = events.slice().reverse().slice(0, 6).map(ev => {
-      const status = (ev.status || "pending").toLowerCase();
-      const badgeCls = status === "approved" ? "badge-open" : "badge-closed";
-      return `
-        <tr>
-          <td><strong>${safeText(ev.title)}</strong></td>
-          <td>${safeText(ev.start_datetime || "")}</td>
-          <td>${safeText(ev.location || "")}</td>
-          <td><span class="badge ${badgeCls}">${safeText(status)}</span></td>
-        </tr>
-      `;
-    }).join("");
+    tbody.innerHTML = events
+      .slice()
+      .reverse()
+      .slice(0, 6)
+      .map(ev => {
+        const status = (ev.status || "pending").toLowerCase();
+        const badgeCls = status === "approved" ? "badge-open" : "badge-closed";
+        return `
+          <tr>
+            <td><strong>${safeText(ev.title)}</strong></td>
+            <td>${safeText(ev.start_datetime || "")}</td>
+            <td>${safeText(ev.location || "")}</td>
+            <td><span class="badge ${badgeCls}">${safeText(status)}</span></td>
+          </tr>
+        `;
+      })
+      .join("");
   }
 
   (async () => {
@@ -205,17 +209,25 @@ document.addEventListener("DOMContentLoaded", () => {
       // ensures staff is assigned to an NGO in DB
       await api("/api/staff/me");
 
-      const events = await api("/api/staff/events");
-      const causes = await api("/api/staff/causes");
+      const [events, causes, donations] = await Promise.all([
+        api("/api/staff/events"),
+        api("/api/staff/causes"),
+        api("/api/staff/ngo-donations-total") // ✅ new
+      ]);
 
-      const activeEvents = (events || []).filter(e => (e.status || "pending").toLowerCase() === "approved");
+      const activeEvents = (events || []).filter(
+        e => (e.status || "pending").toLowerCase() === "approved"
+      );
 
       if (statActiveEvents) statActiveEvents.textContent = String(activeEvents.length);
       if (statTotalEvents)  statTotalEvents.textContent  = String((events || []).length);
       if (statCauses)       statCauses.textContent       = String((causes || []).length);
 
-      // no DB endpoint for assignments yet; keep 0
-      if (statAssignments)  statAssignments.textContent  = "0";
+      // ✅ Total Donations (for staff NGO)
+      if (statDonations) {
+        const total = Number(donations?.total_collected || 0);
+        statDonations.textContent = total.toLocaleString();
+      }
 
       renderRecentEvents(events);
     } catch (err) {
@@ -223,11 +235,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (statActiveEvents) statActiveEvents.textContent = "-";
       if (statTotalEvents)  statTotalEvents.textContent  = "-";
       if (statCauses)       statCauses.textContent       = "-";
-      if (statAssignments)  statAssignments.textContent  = "-";
+      if (statDonations)    statDonations.textContent    = "-";
     }
   })();
 });
 </script>
+
 
 </body>
 </html>

@@ -38,7 +38,7 @@
         <li><a href="/admin/admin.html" >Overview</a></li>
         <li><a href="/admin/admin_events.html">Approve Events</a></li>
         <li><a href="/admin/admin_causes.html">Approve Causes</a></li>
-        <li><a href="/admin/admin_volunteers.html"class="active-menu">Volunteers</a></li>
+        <li><a href="/admin/admin_volunteers.html" class="active-menu">Volunteers</a></li>
         <li><a href="/admin/admin_feedbacks.html">Feedback</a></li>
       </ul>
     </aside>
@@ -75,20 +75,20 @@
               <th>Volunteer ID</th>
               <th>User</th>
               <th>Email</th>
-              <th>NGO</th>
+              <th>Primary NGO</th>
+              <th>All NGOs</th>
               <th>Skills</th>
               <th>Availability</th>
             </tr>
           </thead>
           <tbody id="rows">
-            <tr><td colspan="6">Loading…</td></tr>
+            <tr><td colspan="7">Loading…</td></tr>
           </tbody>
         </table>
       </section>
 
       <p class="muted" style="margin-top:10px">
-        Note: “Volunteer assign to NGO/Event” needs an assignment table (or a junction table).
-        This page is ready to show assignments once that table exists.
+        This page shows primary NGO + all NGO memberships. Event assignments are handled in Staff panels.
       </p>
     </main>
   </div>
@@ -128,6 +128,7 @@
           <td>${safeText(v.user_name || '')}</td>
           <td>${safeText(v.user_email || '')}</td>
           <td>${safeText(v.ngo_name || '')}</td>
+          <td class="wrap">${safeText(v.ngo_names || '')}</td>
           <td class="wrap">${safeText(v.skills || v.skill || '')}</td>
           <td class="wrap">${safeText(v.availability || '')}</td>
         </tr>
@@ -142,16 +143,16 @@
         + (q ? `&q=${encodeURIComponent(q)}` : '')
         + (ngo_id ? `&ngo_id=${encodeURIComponent(ngo_id)}` : '');
 
-      rowsEl.innerHTML = `<tr><td colspan="6">Loading…</td></tr>`;
+      rowsEl.innerHTML = `<tr><td colspan="7">Loading…</td></tr>`;
       try{
         const data = await api(url);
         if(!data.length){
-          rowsEl.innerHTML = `<tr><td colspan="6">No volunteers found.</td></tr>`;
+          rowsEl.innerHTML = `<tr><td colspan="7">No volunteers found.</td></tr>`;
           return;
         }
         rowsEl.innerHTML = data.map(rowHTML).join('');
       }catch(err){
-        rowsEl.innerHTML = `<tr><td colspan="6">${safeText(err.message || 'Failed')}</td></tr>`;
+        rowsEl.innerHTML = `<tr><td colspan="7">${safeText(err.message || 'Failed')}</td></tr>`;
       }
     }
 
