@@ -1,49 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - NGO Management System</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
   <link rel="stylesheet" href="/assets/css/shell.css" />
   <style>
-    body {font-family:'Segoe UI',Arial,sans-serif;margin:0;padding:0;background:#f4f7f6;color:#333}
-    .container{max-width:1200px;margin:30px auto;padding:0 20px}
-    h1{color:#1a5632;border-bottom:2px solid #ddd;padding-bottom:10px;margin-bottom:20px}
-    .management-card{background:#fff;padding:22px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.05);margin-bottom:20px}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin:10px 0 16px}
+    .toolbar .left{display:flex;gap:10px;align-items:center}
+    .status{font-size:13px;color:#29443a}
+    .status.err{color:#b00020}
+    .muted{opacity:.8}
 
-    table{width:100%;border-collapse:collapse;margin-top:10px}
-    th{background:#f8f9fa;text-align:left;padding:12px;border-bottom:2px solid #eee;font-size:14px;color:#666}
-    td{padding:12px;border-bottom:1px solid #eee;font-size:14px}
-
-    .add-cause-btn{background:#1a5632;color:#fff;padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:800}
-    .add-cause-btn:hover{background:#134226}
-
-    .hidden{display:none}
-    #add-cause-form{background:#f9f9f9;padding:18px;border-radius:10px;margin:14px 0;border:1px solid #eee}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .form-group{margin-bottom:12px}
-    .form-group label{display:block;margin-bottom:6px;font-weight:700}
-    .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box}
-    textarea{min-height:90px;resize:vertical}
-
-    .submit-form-btn{background:#4CAF50;color:#fff;padding:10px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:800}
-    .cancel-form-btn{background:#ccc;color:#333;padding:10px 14px;border:none;border-radius:8px;cursor:pointer;margin-left:8px;font-weight:800}
-
-    .status{padding:4px 8px;border-radius:999px;font-size:11px;font-weight:900;text-transform:uppercase;display:inline-block}
-    .status-pending{background:#fff3cd;color:#856404}
-    .status-approved{background:#d4edda;color:#155724}
-    .status-rejected{background:#f8d7da;color:#721c24}
-
-    .action-btn{padding:7px 10px;border:none;border-radius:8px;cursor:pointer;color:#fff;font-weight:800}
-    .delete-btn{background:#e74c3c}
+    .causes-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+      gap:18px;
+      margin-top:12px;
+    }
+    .cause-card{
+      background:#fff;
+      border-radius:14px;
+      box-shadow:0 8px 18px rgba(0,0,0,.08);
+      padding:22px 22px 18px;
+      border:1px solid #eef3f0;
+    }
+    .cause-title{
+      font-size:26px;
+      font-weight:900;
+      color:#1f3b2f;
+      margin:0 0 6px;
+    }
+    .cause-meta{
+      color:#6c7a73;
+      font-size:13px;
+      margin-bottom:14px;
+    }
+    .progress-wrap{
+      background:#eef2ef;
+      border-radius:999px;
+      height:14px;
+      overflow:hidden;
+      margin:10px 0 14px;
+    }
+    .progress-bar{
+      height:100%;
+      background: var(--green);
+      width:0%;
+    }
+    .cause-stats{
+      display:flex;
+      justify-content:space-between;
+      width:100%;
+      color:#2b3a34;
+      font-weight:700;
+      margin-top:4px;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .btn-contribute{
+      border:none;
+      border-radius:10px;
+      padding:10px 16px;
+      font-weight:900;
+      cursor:pointer;
+      background:#f2a15f;
+      color:#fff;
+      margin-top:14px;
+    }
+    .small-muted{opacity:.85;font-weight:600}
   </style>
 </head>
-
 <body>
   <header>
     <div class="logo">NGO Management System</div>
     <nav>
-      <a href="/admin/admin.html" class="active">Admin Dashboard</a>
+      <a href="/admin/admin.html" class="active-menu">Admin Dashboard</a>
       <a href="/admin/admin_reports.html">Reports</a>
       <a href="/admin/admin_donations.html">Donations</a>
       <a href="#" id="logout-link">Logout</a>
@@ -54,7 +86,7 @@
     <aside class="sidebar">
       <h2>Admin</h2>
       <ul class="sidebar-menu">
-        <li><a href="/admin/admin.html"class="active-menu" >Overview</a></li>
+        <li><a href="/admin/admin.html" class="active-menu">Overview</a></li>
         <li><a href="/admin/admin_events.html">Approve Events</a></li>
         <li><a href="/admin/admin_causes.html">Approve Causes</a></li>
         <li><a href="/admin/admin_volunteers.html">Volunteers</a></li>
@@ -63,205 +95,116 @@
     </aside>
 
     <main class="dashboard-content">
-      <div class="container">
-        <h1>Management Console</h1>
+      <h1>Admin Overview</h1>
 
-        <div class="management-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-            <h2 style="margin:0;color:#f4a261;">Donation Causes</h2>
-            <button class="add-cause-btn" id="show-add-form-btn">+ Create New Cause</button>
-          </div>
-
-          <!-- ✅ FIX: form exists so JS won’t crash -->
-          <form id="add-cause-form" class="hidden">
-            <input type="hidden" id="cause-id-field" value="" />
-            <h3 id="form-title" style="margin:0 0 10px;color:#1a5632;">Create New Donation Cause</h3>
-
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="cause-ngo-select">NGO</label>
-                <select id="cause-ngo-select" required>
-                  <option value="">Loading NGOs...</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="cause-goal">Goal Amount (PKR)</label>
-                <input id="cause-goal" type="number" min="1" required placeholder="e.g., 50000" />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="cause-title">Cause Title</label>
-              <input id="cause-title" required placeholder="e.g., Flood Relief Drive" />
-            </div>
-
-            <div class="form-group">
-              <label for="cause-description">Description</label>
-              <textarea id="cause-description" placeholder="Short description..."></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="cause-status">Status</label>
-              <!-- backend creates approved directly in POST /api/admin/causes, but keep UI -->
-              <select id="cause-status">
-                <option value="approved">approved</option>
-                <option value="pending">pending</option>
-                <option value="rejected">rejected</option>
-              </select>
-            </div>
-
-            <button class="submit-form-btn" type="submit">Save</button>
-            <button class="cancel-form-btn" type="button" id="cancel-add-form-btn">Cancel</button>
-          </form>
-
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Cause Title</th>
-                <th>NGO</th>
-                <th>Goal (PKR)</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="cause-table-body">
-              <tr><td colspan="6">Loading…</td></tr>
-            </tbody>
-          </table>
+      <div class="toolbar">
+        <div class="left">
+          <button id="refresh-btn" class="ghost" style="border:none;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer;background:#f3f6f5;color:#1d2b25;">
+            Refresh
+          </button>
+          <span class="status muted" id="status">Loading…</span>
         </div>
       </div>
+
+      <section class="section">
+        <h2>Our Causes</h2>
+        <div id="causes-grid" class="causes-grid"></div>
+      </section>
     </main>
   </div>
 
-  <!-- ✅ Use shared auth.js -->
   <script src="/assets/js/auth.js"></script>
-
   <script>
     if(!window.auth.requireRole('admin')) { /* redirected */ }
 
-    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-    const token = window.auth.token();
+    const API = { approved: '/api/admin/causes?status=approved' };
 
-    const authHeaders = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    };
+    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({
+      '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'
+    }[c]));
 
-    const addForm = document.getElementById("add-cause-form");
-    const tbody = document.getElementById("cause-table-body");
+    async function apiFetch(url, opts={}){
+      const headers = Object.assign(
+        { 'Content-Type': 'application/json' },
+        window.auth.headers(),
+        (opts.headers||{})
+      );
+      const res = await fetch(url, Object.assign({}, opts, { headers }));
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json().catch(()=>null) : await res.text().catch(()=>null);
 
-    function badge(status){
-      const s = (status || 'pending').toLowerCase();
-      const cls = (s === 'approved') ? 'status-approved' : (s === 'rejected') ? 'status-rejected' : 'status-pending';
-      return `<span class="status ${cls}">${safeText(s)}</span>`;
+      if(!res.ok){
+        const msg = (data && data.message) ? data.message : (typeof data === 'string' ? data : `Request failed (${res.status})`);
+        throw new Error(msg);
+      }
+      return data;
     }
 
-    // Fetch NGOs for dropdown
-    async function loadNgos(){
-      const res = await fetch("/api/ngos");
-      const ngos = await res.json().catch(()=>[]);
-      const select = document.getElementById("cause-ngo-select");
-      select.innerHTML = `<option value="">Select NGO</option>`;
-      ngos.forEach(ngo => {
-        const opt = document.createElement('option');
-        opt.value = ngo.id ?? ngo.ngo_id;
-        opt.textContent = ngo.name;
-        select.appendChild(opt);
-      });
-    }
+    function money(n){ return `PKR ${Number(n || 0).toLocaleString()}`; }
 
-    // ✅ FIX: admin should load from /api/admin/causes not public /api/causes
-    async function loadCauses(){
-      const res = await fetch("/api/admin/causes", { headers: authHeaders });
-      const causes = await res.json().catch(()=>[]);
-      tbody.innerHTML = causes.length ? "" : "<tr><td colspan='6'>No records found.</td></tr>";
+    function renderRows(rows){
+      if(!rows.length) return `<div class="cause-card">No approved causes found.</div>`;
 
-      causes.forEach(c => {
-        const id = c.id ?? c.cause_id;
-        const ngo = c.ngo_name || c.ngo || '';
-        const goal = Number(c.goal_amount || c.goal || 0).toLocaleString();
-        const status = c.status || 'pending';
+      return rows.map(c => {
+        const title = safeText(c.title);
+        const manager = safeText(c.ngo_name || '—');
 
-        tbody.innerHTML += `
-          <tr>
-            <td>#${safeText(id)}</td>
-            <td><strong>${safeText(c.title)}</strong></td>
-            <td>${safeText(ngo)}</td>
-            <td>${safeText(goal)}</td>
-            <td>${badge(status)}</td>
-            <td>
-              <button class="action-btn delete-btn" data-del="${safeText(id)}">Delete</button>
-            </td>
-          </tr>
+        const goal = Number(c.goal_amount || 0);
+        const raised = Number(c.raised_amount || 0);
+        const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+
+        return `
+          <div class="cause-card">
+            <h3 class="cause-title">${title}</h3>
+            <div class="cause-meta">Managed by: <b>${manager}</b></div>
+
+            <div class="progress-wrap">
+              <div class="progress-bar" style="width:${pct}%"></div>
+            </div>
+
+            <div class="cause-stats">
+              <div>Goal: <span class="small-muted">${money(goal)}</span></div>
+              <div>Raised: <span class="small-muted">${money(raised)} (${pct}%)</span></div>
+            </div>
+
+            <button class="btn-contribute" data-cause-id="${c.id}">Contribute Now</button>
+          </div>
         `;
-      });
+      }).join('');
     }
 
-    document.getElementById("show-add-form-btn").addEventListener("click", () => {
-      addForm.reset();
-      document.getElementById("cause-id-field").value = "";
-      document.getElementById("form-title").textContent = "Create New Donation Cause";
-      addForm.classList.remove("hidden");
-    });
+    const statusEl = document.getElementById('status');
+    const gridEl = document.getElementById('causes-grid');
 
-    document.getElementById("cancel-add-form-btn").addEventListener("click", () => {
-      addForm.classList.add("hidden");
-    });
+    function setStatus(msg, isErr=false){
+      statusEl.textContent = msg;
+      statusEl.classList.toggle('err', !!isErr);
+      statusEl.classList.toggle('muted', !isErr);
+    }
 
-    // POST Cause (keeps your existing backend behavior)
-    addForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const body = {
-        ngo_id: document.getElementById('cause-ngo-select').value,
-        title: document.getElementById('cause-title').value,
-        description: document.getElementById('cause-description').value,
-        goal_amount: document.getElementById('cause-goal').value,
-        status: document.getElementById('cause-status').value
-      };
-
-      const res = await fetch("/api/admin/causes", {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify(body)
-      });
-
-      if (res.ok) {
-        alert("Cause saved successfully!");
-        addForm.classList.add("hidden");
-        await loadCauses();
-      } else {
-        const err = await res.json().catch(()=>null);
-        alert(err?.message || "Error saving cause. Check permissions.");
+    async function load(){
+      try{
+        setStatus('Loading…');
+        const approved = await apiFetch(API.approved);
+        const rows = Array.isArray(approved) ? approved : [];
+        gridEl.innerHTML = renderRows(rows);
+        setStatus('Up to date.');
+      }catch(err){
+        gridEl.innerHTML = `<div class="cause-card">Failed to load causes.</div>`;
+        setStatus(err.message || 'Failed to load', true);
       }
-    });
+    }
 
-    // DELETE Cause (event delegation)
-    document.addEventListener('click', async (e) => {
-      const btn = e.target.closest('button[data-del]');
+    document.getElementById('refresh-btn').addEventListener('click', load);
+
+    document.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.btn-contribute[data-cause-id]');
       if(!btn) return;
-      const id = btn.getAttribute('data-del');
-      if (!confirm("Are you sure? This action cannot be undone.")) return;
-
-      const res = await fetch(`/api/admin/causes/${id}`, {
-        method: 'DELETE',
-        headers: authHeaders
-      });
-
-      if (res.ok) {
-        await loadCauses();
-      } else {
-        const err = await res.json().catch(()=>null);
-        alert(err?.message || "Delete failed.");
-      }
+      const id = btn.getAttribute('data-cause-id');
+      window.location.href = `/donate/cause.html?id=${encodeURIComponent(id)}`;
     });
 
-    (async function init(){
-      await loadNgos();
-      await loadCauses();
-    })();
+    load();
   </script>
 </body>
 </html>

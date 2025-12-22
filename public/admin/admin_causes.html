@@ -43,7 +43,7 @@
     <aside class="sidebar">
       <h2>Admin</h2>
       <ul class="sidebar-menu">
-        <li><a href="/admin/admin.html" >Overview</a></li>
+        <li><a href="/admin/admin.html">Overview</a></li>
         <li><a href="/admin/admin_events.html">Approve Events</a></li>
         <li><a href="/admin/admin_causes.html" class="active-menu">Approve Causes</a></li>
         <li><a href="/admin/admin_volunteers.html">Volunteers</a></li>
@@ -78,7 +78,12 @@
         <table>
           <thead>
             <tr>
-              <th>NGO</th><th>Title</th><th>Goal</th><th>Status</th>
+              <th>Title</th>
+              <th>NGO</th>
+              <th>Goal</th>
+              <th>Raised</th>
+              <th>Progress</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody id="all-body"></tbody>
@@ -91,7 +96,15 @@
   <script>
     if(!window.auth.requireRole('admin')) { /* redirected */ }
 
-    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+    const API = {
+      pending: '/api/admin/causes?status=pending',
+      all: '/api/admin/causes',
+      status: (id) => `/api/admin/causes/${id}/status`
+    };
+
+    const safeText = (v) => (v ?? "").toString().replace(/[<>&"]/g, c => ({
+      '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'
+    }[c]));
 
     function pill(status){
       const s = (status || 'pending').toString().toLowerCase();
@@ -116,27 +129,24 @@
       return data;
     }
 
-    const statusEl = document.getElementById('status');
-    const pendingBody = document.getElementById('pending-body');
-    const allBody = document.getElementById('all-body');
-
-    function setStatus(msg, isErr=false){
-      statusEl.textContent = msg;
-      statusEl.classList.toggle('err', !!isErr);
-      statusEl.classList.toggle('muted', !isErr);
-    }
-
     function renderRows(rows, withActions){
       if(!rows.length){
         return withActions
           ? `<tr><td colspan="5">No pending causes.</td></tr>`
-          : `<tr><td colspan="4">No causes found.</td></tr>`;
+          : `<tr><td colspan="6">No causes found.</td></tr>`;
       }
 
       return rows.map(c => {
         const ngo = safeText(c.ngo_name || '(Unknown NGO)');
         const title = `<div class="wrap">${safeText(c.title)}</div>`;
-        const goal = `PKR ${Number(c.goal_amount || 0).toLocaleString()}`;
+
+        const goalVal = Number(c.goal_amount || 0);
+        const raisedVal = Number(c.raised_amount || 0);
+
+        const goal = `PKR ${goalVal.toLocaleString()}`;
+        const raised = `PKR ${raisedVal.toLocaleString()}`;
+        const pct = goalVal > 0 ? Math.min(100, Math.round((raisedVal / goalVal) * 100)) : 0;
+
         const st = pill(c.status);
 
         if(withActions){
@@ -156,21 +166,33 @@
 
         return `
           <tr>
-            <td>${ngo}</td>
             <td>${title}</td>
+            <td>${ngo}</td>
             <td>${goal}</td>
+            <td>${raised}</td>
+            <td>${pct}%</td>
             <td>${st}</td>
           </tr>
         `;
       }).join('');
     }
 
+    const statusEl = document.getElementById('status');
+    const pendingBody = document.getElementById('pending-body');
+    const allBody = document.getElementById('all-body');
+
+    function setStatus(msg, isErr=false){
+      statusEl.textContent = msg;
+      statusEl.classList.toggle('err', !!isErr);
+      statusEl.classList.toggle('muted', !isErr);
+    }
+
     async function load(){
       try{
         setStatus('Loading…');
         const [pending, all] = await Promise.all([
-          apiFetch('/api/admin/causes?status=pending'),
-          apiFetch('/api/admin/causes')
+          apiFetch(API.pending),
+          apiFetch(API.all)
         ]);
 
         pendingBody.innerHTML = renderRows(Array.isArray(pending) ? pending : [], true);
@@ -178,13 +200,13 @@
         setStatus('Up to date.');
       }catch(err){
         pendingBody.innerHTML = `<tr><td colspan="5">Failed to load.</td></tr>`;
-        allBody.innerHTML = `<tr><td colspan="4">Failed to load.</td></tr>`;
+        allBody.innerHTML = `<tr><td colspan="6">Failed to load.</td></tr>`;
         setStatus(err.message || 'Failed to load', true);
       }
     }
 
     async function updateStatus(id, status){
-      await apiFetch(`/api/admin/causes/${id}/status`, {
+      await apiFetch(API.status(id), {
         method: 'PATCH',
         body: JSON.stringify({ status })
       });
