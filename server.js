@@ -109,6 +109,7 @@ app.get('/api/ngos', async (req, res) => {
   }
 });
 
+
 // NOTE: Only approved causes should be visible publicly.
 app.get('/api/causes', async (req, res) => {
   try {
@@ -719,38 +720,40 @@ app.get('/api/staff/causes', requireAuth, requireRole('staff'), async (req, res)
 // Admin: list causes (optionally filter by status)
 //   GET /api/admin/causes                -> all
 //   GET /api/admin/causes?status=pending -> pending only
+// Admin: list causes (optionally filter by status) + include raised_amount
+//   GET /api/admin/causes
+//   GET /api/admin/causes?status=pending|approved|rejected
+// Admin: list causes with raised amount
 app.get('/api/admin/causes', requireAuth, requireRole('admin'), async (req, res) => {
-  const status = (req.query.status || '').toString().trim().toLowerCase();
+  const status = (req.query.status || '').toLowerCase();
   const allowed = ['pending', 'approved', 'rejected'];
   const where = allowed.includes(status) ? 'WHERE c.status = ?' : '';
   const params = allowed.includes(status) ? [status] : [];
+
   try {
-    const [rows] = await pool.query(
-      `
+    const [rows] = await pool.query(`
       SELECT
         c.cause_id AS id,
-        c.ngo_id,
-        n.name AS ngo_name,
         c.title,
-        c.description,
         c.goal_amount,
-        c.category,
-        c.start_date,
-        c.end_date,
-        c.status
+        c.status,
+        n.name AS ngo_name,
+        COALESCE(SUM(dc.amount_allocated), 0) AS raised_amount
       FROM Cause c
       JOIN NGO n ON n.ngo_id = c.ngo_id
+      LEFT JOIN Donation_Cause dc ON dc.cause_id = c.cause_id
       ${where}
+      GROUP BY c.cause_id, c.title, c.goal_amount, c.status, n.name
       ORDER BY c.cause_id DESC
-      LIMIT 1000
-      `,
-      params
-    );
-    return res.json(rows);
-  } catch (e) {
-    return res.status(500).json({ message: 'DB error', error: e.message });
+    `, params);
+
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to load causes', error: err.message });
   }
 });
+
+
 
 // Admin: list events (optionally filter by status)
 //   GET /api/admin/events                -> all
